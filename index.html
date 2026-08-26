@@ -18,7 +18,11 @@
         .header-title img { height: 70px; margin-right: 20px; }
         .header-title h1 { margin: 0; color: #1e293b; font-size: 26px; font-weight: 600;}
         .container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 35px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px;}
+        
         .auth-container { max-width: 420px; margin: 10vh auto; background: #fff; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+        /* NEW: Symmetrical square for login modal */
+        .login-square { width: 400px; height: 400px; max-width: 400px; border-radius: 24px; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; }
+        
         h2 { text-align: center; color: #1e293b; margin-bottom: 25px; font-weight: 600; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
         .form-group { display: flex; flex-direction: column; margin-bottom: 5px; }
@@ -58,8 +62,11 @@
 <body>
 
 <!-- Authentication Sections -->
-<div id="loginSection" class="auth-container">
-    <h2>Portal Login</h2>
+<div id="loginSection" class="auth-container login-square">
+    <div style="text-align: center; margin-bottom: 20px;">
+        <img src="images/RHSU LOGO.png" alt="RHSU Logo" style="height: 70px; margin-bottom: 10px;">
+        <h2 style="margin-top: 0; margin-bottom: 0;">NMNP Portal</h2>
+    </div>
     <form id="loginForm">
         <div class="form-group"><label>Username</label><input type="text" id="loginUser" name="username" required></div>
         <div class="form-group"><label>Password</label><input type="password" id="loginPass" name="password" required></div>
@@ -133,7 +140,6 @@
                         </div>
                         <div class="form-group"><label>Station</label><input type="text" id="station" name="station"></div>
                         
-                        <!-- UPDATED: Unit/Office Dropdown -->
                         <div class="form-group">
                             <label>Unit/Office</label>
                             <select id="unitOffice" name="unitOffice" required>
@@ -250,7 +256,6 @@
                 <div class="form-group"><label>Duty Status</label><input type="text" id="editDutyStatus" name="dutyStatus"></div>
                 <div class="form-group"><label>Station</label><input type="text" id="editStation" name="station"></div>
                 
-                <!-- UPDATED: Unit/Office Dropdown for Edit Form -->
                 <div class="form-group">
                     <label>Unit/Office</label>
                     <select id="editUnitOffice" name="unitOffice" required>
@@ -264,6 +269,12 @@
                 
                 <div class="form-group"><label>Commissionship</label><input type="text" id="editCommissionship" name="commissionship"></div>
                 <div class="form-group"><label>Gender</label><input type="text" id="editGender" name="gender"></div>
+                
+                <!-- NEW: Signatory Dropdowns for the Edit Form -->
+                <div class="form-group"><label>Cert. of Non-Money</label><select id="editSigNonMoney" name="sigNonMoney" required></select></div>
+                <div class="form-group"><label>Cert. of Non-Property</label><select id="editSigNonProperty" name="sigNonProperty" required></select></div>
+                <div class="form-group"><label>Noted by (Chief)</label><select id="editSigChief" name="sigChief" required></select></div>
+
                 <div class="form-group full-width"><label>Reason</label><textarea id="editReason" name="reason" rows="2"></textarea></div>
             </div>
             <button type="submit" style="background-color: #10b981;">Save Changes & Download PDF</button>
@@ -340,8 +351,8 @@
 
     // --- AUTHENTICATION & PERSISTENCE ---
     function toggleAuth(view) {
-        document.getElementById('loginSection').style.display = view === 'login' ? 'block' : 'none';
-        document.getElementById('registerSection').style.display = view === 'register' ? 'block' : 'none';
+        document.getElementById('loginSection').style.display = view === 'login' ? 'flex' : 'none';
+        document.getElementById('registerSection').style.display = view === 'register' ? 'flex' : 'none';
     }
 
     function showMainApp() {
@@ -370,7 +381,7 @@
             currentRole = storedRole;
             showMainApp();
         } else {
-            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('loginSection').style.display = 'flex';
         }
     }
 
@@ -379,7 +390,7 @@
         localStorage.removeItem('currentRole');
         
         document.getElementById('mainApp').style.display = 'none';
-        document.getElementById('loginSection').style.display = 'block';
+        document.getElementById('loginSection').style.display = 'flex';
         currentUser = ''; currentRole = 'User';
         document.querySelectorAll('.alpha-only').forEach(el => el.style.display = 'none');
         document.getElementById('pageSettings').innerHTML = ''; 
@@ -612,6 +623,34 @@
             });
     }
 
+    // UPDATED: Now populates both Home Page and Edit form dropdowns
+    function loadSignatories() {
+        fetch(webAppUrl, { method: 'POST', body: new URLSearchParams({action: 'getSignatories'}) })
+            .then(res => res.json()).then(data => {
+                // Main form
+                const s1 = document.getElementById('sigNonMoney');
+                const s2 = document.getElementById('sigNonProperty');
+                const s3 = document.getElementById('sigChief');
+                // Edit form
+                const es1 = document.getElementById('editSigNonMoney');
+                const es2 = document.getElementById('editSigNonProperty');
+                const es3 = document.getElementById('editSigChief');
+
+                const defaultOpt = '<option value="">Select...</option>';
+                s1.innerHTML = defaultOpt; s2.innerHTML = defaultOpt; s3.innerHTML = defaultOpt;
+                es1.innerHTML = defaultOpt; es2.innerHTML = defaultOpt; es3.innerHTML = defaultOpt;
+                
+                if(data.signatories) {
+                    data.signatories.forEach(s => {
+                        const optionText = `<option value="${s[1]} ${s[2]}">${s[1]} ${s[2]} (${s[3]})</option>`;
+                        if(s[0] === 'Non-Money') { s1.innerHTML += optionText; es1.innerHTML += optionText; }
+                        if(s[0] === 'Non-Property') { s2.innerHTML += optionText; es2.innerHTML += optionText; }
+                        if(s[0] === 'Chief') { s3.innerHTML += optionText; es3.innerHTML += optionText; }
+                    });
+                }
+            });
+    }
+
     function saveUser(username, safeId) {
         const params = new URLSearchParams({
             targetUser: username,
@@ -620,25 +659,6 @@
         });
         fetch(webAppUrl, { method: 'POST', body: new URLSearchParams({action: 'updateUserRole', ...Object.fromEntries(params)}) })
             .then(res=>res.json()).then(data => { alert(data.result === 'success' ? 'Updated.' : 'Error.'); loadUsersList(); });
-    }
-
-    function loadSignatories() {
-        fetch(webAppUrl, { method: 'POST', body: new URLSearchParams({action: 'getSignatories'}) })
-            .then(res => res.json()).then(data => {
-                const s1 = document.getElementById('sigNonMoney');
-                const s2 = document.getElementById('sigNonProperty');
-                const s3 = document.getElementById('sigChief');
-                s1.innerHTML = '<option value="">Select...</option>'; s2.innerHTML = '<option value="">Select...</option>'; s3.innerHTML = '<option value="">Select...</option>';
-                
-                if(data.signatories) {
-                    data.signatories.forEach(s => {
-                        const optionText = `<option value="${s[1]} ${s[2]}">${s[1]} ${s[2]} (${s[3]})</option>`;
-                        if(s[0] === 'Non-Money') s1.innerHTML += optionText;
-                        if(s[0] === 'Non-Property') s2.innerHTML += optionText;
-                        if(s[0] === 'Chief') s3.innerHTML += optionText;
-                    });
-                }
-            });
     }
 
     function loadSignatoriesTable() {
