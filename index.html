@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RHSU Certification System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f0f4f8; margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden;}
+        .sidebar { width: 260px; background-color: #1e293b; color: white; display: flex; flex-direction: column; padding-top: 20px; transition: 0.3s; box-shadow: 2px 0 10px rgba(0,0,0,0.1);}
+        .sidebar-header { text-align: center; margin-bottom: 30px; font-weight: 600; font-size: 18px; letter-spacing: 0.5px;}
+        .nav-item { padding: 16px 24px; cursor: pointer; display: flex; align-items: center; border-bottom: 1px solid #334155; transition: all 0.3s ease;}
+        .nav-item:hover { background-color: #334155; padding-left: 30px;}
+        .nav-item .dot { height: 10px; width: 10px; background-color: #ef4444; border-radius: 50%; margin-right: 15px; transition: 0.3s;}
+        .nav-item.active .dot { background-color: #10b981; box-shadow: 0 0 8px #10b981;}
+        .main-wrapper { flex-grow: 1; overflow-y: auto; padding: 30px; position: relative;}
+        .header-title { display: flex; align-items: center; justify-content: center; margin-bottom: 30px; background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);}
+        .header-title img { height: 70px; margin-right: 20px; }
+        .header-title h1 { margin: 0; color: #1e293b; font-size: 26px; font-weight: 600;}
+        .container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 35px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px;}
+        .auth-container { max-width: 420px; margin: 10vh auto; background: #fff; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+        h2 { text-align: center; color: #1e293b; margin-bottom: 25px; font-weight: 600; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 5px; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        label { font-weight: 500; margin-bottom: 8px; font-size: 13px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;}
+        input, select, textarea { padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 14px; width: 100%; box-sizing: border-box; font-family: 'Poppins', sans-serif; transition: border-color 0.3s;}
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);}
+        input[readonly] { background-color: #f1f5f9; cursor: not-allowed; color: #64748b;}
+        button { background-color: #2563eb; color: white; border: none; padding: 14px 24px; font-size: 15px; border-radius: 12px; cursor: pointer; font-weight: 600; width: 100%; margin-top: 15px; transition: background-color 0.3s, transform 0.1s;}
+        button:hover { background-color: #1d4ed8; }
+        button:active { transform: scale(0.98); }
+        .btn-secondary { background-color: #64748b; }
+        .btn-secondary:hover { background-color: #475569; }
+        .toggle-link { text-align: center; margin-top: 20px; color: #2563eb; cursor: pointer; font-size: 14px; font-weight: 500;}
+        .toggle-link:hover { text-decoration: underline; }
+        .table-wrapper { overflow-x: auto; margin-top: 25px; border-radius: 12px; border: 1px solid #e2e8f0;}
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; font-size: 14px; }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #e2e8f0;}
+        th { background-color: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;}
+        tbody tr:hover { background-color: #f1f5f9; }
+        .action-btns { display: flex; gap: 8px; }
+        .btn-small { padding: 8px 14px; font-size: 12px; width: auto; margin:0; border-radius: 8px;}
+        .btn-edit { background-color: #f59e0b; color: #fff; }
+        .btn-edit:hover { background-color: #d97706; }
+        .btn-delete { background-color: #ef4444; }
+        .btn-delete:hover { background-color: #dc2626; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); padding: 40px; border-radius: 20px; width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto;}
+        .modal-small { max-width: 400px; text-align: center; }
+        .close-btn { float: right; cursor: pointer; font-size: 24px; font-weight: bold; color: #64748b; transition: color 0.3s;}
+        .close-btn:hover { color: #0f172a; }
+        #mainApp, #registerSection, #pagePassword, #pageSettings { display: none; }
+        .alpha-only { display: none; }
+        .button-group { display: flex; gap: 10px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<!-- Authentication Sections -->
+<div id="loginSection" class="auth-container">
+    <h2>Portal Login</h2>
+    <form id="loginForm">
+        <div class="form-group"><label>Username</label><input type="text" id="loginUser" name="username" required></div>
+        <div class="form-group"><label>Password</label><input type="password" id="loginPass" name="password" required></div>
+        <button type="submit">Login</button>
+    </form>
+    <div class="toggle-link" onclick="toggleAuth('register')">Create an Account</div>
+</div>
+
+<div id="registerSection" class="auth-container">
+    <h2>Create Account</h2>
+    <form id="registerForm">
+        <div class="form-group"><label>New Username</label><input type="text" id="regUser" name="username" required></div>
+        <div class="form-group"><label>New Password</label><input type="password" id="regPass" name="password" required></div>
+        <button type="submit">Register</button>
+    </form>
+    <div class="toggle-link" onclick="toggleAuth('login')">Back to Login</div>
+</div>
+
+<!-- Main Application UI -->
+<div id="mainApp" style="width: 100%; display: none;">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div>RHSU Panel</div>
+            <div id="userRoleBadge" style="font-size: 12px; font-weight: 400; color: #94a3b8; margin-top: 5px;"></div>
+        </div>
+        <div class="nav-item active" onclick="switchPage('pageHome', this)"><div class="dot"></div>Homepage</div>
+        <div class="nav-item" onclick="switchPage('pagePassword', this)"><div class="dot"></div>Update Password</div>
+        <div class="nav-item alpha-only" id="settingsNav" onclick="switchPage('pageSettings', this)"><div class="dot"></div>System Settings</div>
+        <div class="nav-item" onclick="logout()"><div class="dot" style="background-color: #64748b;"></div>Log Out</div>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="header-title">
+            <img src="images/PRO 1 LOGO.png" alt="PRO 1 Logo">
+            <h1>RHSU CERTIFICATION SYSTEM</h1>
+        </div>
+
+        <!-- 1. HOMEPAGE -->
+        <div id="pageHome" class="page-section">
+            <div class="container">
+                <h2>Certification Form</h2>
+                <form id="entryForm">
+                    <div class="form-grid">
+                        <div class="form-group"><label>Date</label><input type="date" id="date" name="date" required></div>
+                        <input type="hidden" id="formattedDate" name="formattedDate">
+                        <div class="form-group"><label>Control No</label><input type="text" id="controlNo" name="controlNo" required readonly placeholder="Loading..."></div>
+                        <div class="form-group">
+                            <label>Rank</label>
+                            <select id="rank" name="rank" required>
+                                <option value="">Select Rank...</option>
+                                <option value="PBGEN">PBGEN</option><option value="PCOL">PCOL</option>
+                                <option value="PLTCOL">PLTCOL</option><option value="PMAJ">PMAJ</option>
+                                <option value="PCPT">PCPT</option><option value="PLT">PLT</option>
+                                <option value="PEMS">PEMS</option><option value="PCMS">PCMS</option>
+                                <option value="PSMS">PSMS</option><option value="PMSg">PMSg</option>
+                                <option value="PSSg">PSSg</option><option value="PCpl">PCpl</option>
+                                <option value="Pat">Pat</option><option value="NUP">NUP</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>First Name</label><input type="text" id="firstName" name="firstName" required></div>
+                        <div class="form-group"><label>Middle Name</label><input type="text" id="middleName" name="middleName"></div>
+                        <div class="form-group"><label>Last Name</label><input type="text" id="lastName" name="lastName" required></div>
+                        <div class="form-group"><label>Qlf</label><input type="text" id="qlf" name="qlf"></div>
+                        <div class="form-group">
+                            <label>Duty Status</label>
+                            <select id="dutyStatus" name="dutyStatus">
+                                <option value="Active">Active</option><option value="Suspended">Suspended</option>
+                                <option value="Retired">Retired</option><option value="Resigned">Resigned</option>
+                                <option value="Deceased">Deceased</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Station</label><input type="text" id="station" name="station"></div>
+                        <div class="form-group"><label>Unit/Office</label><input type="text" id="unitOffice" name="unitOffice"></div>
+                        <div class="form-group">
+                            <label>Commissionship</label>
+                            <select id="commissionship" name="commissionship" required>
+                                <option value="">Select...</option><option value="PCO">PCO</option>
+                                <option value="PNCO">PNCO</option><option value="NUP">NUP</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Gender</label>
+                            <select id="genderUi" required><option value="">Select...</option><option value="Male">Male</option><option value="Female">Female</option></select>
+                            <input type="hidden" id="gender" name="gender">
+                        </div>
+                        
+                        <div class="form-group"><label>Cert. of Non-Money</label><select id="sigNonMoney" name="sigNonMoney" required></select></div>
+                        <div class="form-group"><label>Cert. of Non-Property</label><select id="sigNonProperty" name="sigNonProperty" required></select></div>
+                        <div class="form-group"><label>Noted by (Chief)</label><select id="sigChief" name="sigChief" required></select></div>
+
+                        <div class="form-group full-width"><label>Reason</label><textarea id="reason" name="reason" rows="3"></textarea></div>
+                    </div>
+                    <div class="button-group">
+                        <button type="button" class="btn-secondary" onclick="openPreview()">Preview Document</button>
+                        <button type="submit" id="submitBtn">Submit Document</button>
+                    </div>
+                </form>
+                <div id="statusMessage" style="text-align:center; margin-top:15px; font-weight:600;"></div>
+            </div>
+
+            <div class="container">
+                <h2>Data Records</h2>
+                <div class="table-wrapper">
+                    <table id="recordsTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th><th>Control No</th><th>Rank</th><th>Name</th>
+                                <th>Duty Status</th><th>Unit/Office</th><th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody><tr><td colspan="7" style="text-align:center; padding: 20px;">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. UPDATE PASSWORD -->
+        <div id="pagePassword" class="page-section container">
+            <h2>Update Password</h2>
+            <form id="passwordForm">
+                <div class="form-group"><label>Current Password</label><input type="password" id="oldPassword" required></div>
+                <div class="form-group"><label>New Password</label><input type="password" id="newPassword" required></div>
+                <button type="submit">Update Password</button>
+            </form>
+        </div>
+
+        <!-- 3. SYSTEM SETTINGS -->
+        <div id="pageSettings" class="page-section container alpha-only">
+            <h2>System Settings</h2>
+            
+            <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 30px;">
+                <h3 style="margin-top:0; color: #334155;">User Management</h3>
+                <div class="table-wrapper">
+                    <table id="usersTable">
+                        <thead><tr><th>Username</th><th>Role</th><th>PIN</th><th>Action</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                <h3 style="margin-top:0; color: #334155;">Signatories</h3>
+                <form id="signatoryForm" data-editing="false" data-old-name="" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 15px; align-items: end; margin-bottom: 20px;">
+                    <div class="form-group" style="margin:0;"><label>Category</label><select id="sigCat" required><option value="Non-Money">Non-Money</option><option value="Non-Property">Non-Property</option><option value="Chief">Chief</option></select></div>
+                    <div class="form-group" style="margin:0;"><label>Rank</label><input type="text" id="sigRank" required></div>
+                    <div class="form-group" style="margin:0;"><label>Name</label><input type="text" id="sigName" required></div>
+                    <div class="form-group" style="margin:0;"><label>Designation</label><input type="text" id="sigDesig" required></div>
+                    <button type="submit" id="sigSubmitBtn" style="margin:0; height: 46px; border-radius: 12px;">Add</button>
+                </form>
+                <div class="table-wrapper">
+                    <table id="signatoriesTable">
+                        <thead><tr><th>Category</th><th>Rank</th><th>Name</th><th>Designation</th><th>Action</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Record Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('editModal')">&times;</span>
+        <h2>Edit Record</h2>
+        <form id="editForm">
+            <input type="hidden" id="editControlNo" name="controlNo">
+            <div class="form-grid">
+                <div class="form-group"><label>Date</label><input type="date" id="editDate" name="date" required></div>
+                <div class="form-group"><label>Rank</label><input type="text" id="editRank" name="rank" required></div>
+                <div class="form-group"><label>First Name</label><input type="text" id="editFirstName" name="firstName" required></div>
+                <div class="form-group"><label>Middle Name</label><input type="text" id="editMiddleName" name="middleName"></div>
+                <div class="form-group"><label>Last Name</label><input type="text" id="editLastName" name="lastName" required></div>
+                <div class="form-group"><label>Qlf</label><input type="text" id="editQlf" name="qlf"></div>
+                <div class="form-group"><label>Duty Status</label><input type="text" id="editDutyStatus" name="dutyStatus"></div>
+                <div class="form-group"><label>Station</label><input type="text" id="editStation" name="station"></div>
+                <div class="form-group"><label>Unit/Office</label><input type="text" id="editUnitOffice" name="unitOffice"></div>
+                <div class="form-group"><label>Commissionship</label><input type="text" id="editCommissionship" name="commissionship"></div>
+                <div class="form-group"><label>Gender</label><input type="text" id="editGender" name="gender"></div>
+                <div class="form-group full-width"><label>Reason</label><textarea id="editReason" name="reason" rows="2"></textarea></div>
+            </div>
+            <button type="submit" style="background-color: #10b981;">Save Changes</button>
+        </form>
+    </div>
+</div>
+
+<!-- Custom PIN Modal -->
+<div id="pinModal" class="modal">
+    <div class="modal-content modal-small">
+        <h3 id="pinMessage">Admin / Alpha-Admin Approval Required.</h3>
+        <div class="form-group"><label>Enter PIN:</label><input type="password" id="pinInput" maxlength="6"></div>
+        <div class="button-group">
+            <button type="button" class="btn-secondary" id="pinCancelBtn">Cancel</button>
+            <button type="button" id="pinConfirmBtn">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Document Modal via iframe -->
+<div id="previewModal" class="modal">
+    <div class="modal-content" style="width: 90%; height: 85vh; display: flex; flex-direction: column;">
+        <span class="close-btn" onclick="closeModal('previewModal')">&times;</span>
+        <h2>Document Preview</h2>
+        <div id="previewLoading" style="text-align: center; padding: 20px; font-weight: 500; display: none;">Generating template preview...</div>
+        <iframe id="previewFrame" style="flex-grow: 1; width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; display: none;"></iframe>
+        <div class="button-group">
+            <button type="button" class="btn-secondary" onclick="closeModal('previewModal')">Close Preview</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const webAppUrl = 'https://script.google.com/macros/s/AKfycbyaOLAFrOL4-PRgkDK7_vM8gHUNzzbqRKULu8NuecC4KsRLaMfcSGPbiBN56GZwu60J5Q/exec';
+    let currentUser = '';
+    let currentRole = 'User';
+
+    // Formatter utility
+    function formatToTextDate(dateStr) {
+        if(!dateStr) return '';
+        const options = { year: 'numeric', month: 'long', day: '2-digit' };
+        return new Date(dateStr).toLocaleDateString('en-US', options);
+    }
+
+    // Custom PIN request
+    function requestPin(message) {
+        return new Promise((resolve) => {
+            const modal = document.getElementById('pinModal');
+            document.getElementById('pinMessage').innerText = message || "Enter PIN:";
+            document.getElementById('pinInput').value = '';
+            modal.style.display = 'flex';
+            
+            document.getElementById('pinConfirmBtn').onclick = () => {
+                modal.style.display = 'none';
+                resolve(document.getElementById('pinInput').value);
+            };
+            document.getElementById('pinCancelBtn').onclick = () => {
+                modal.style.display = 'none';
+                resolve(null);
+            };
+        });
+    }
+
+    function toggleAuth(view) {
+        document.getElementById('loginSection').style.display = view === 'login' ? 'block' : 'none';
+        document.getElementById('registerSection').style.display = view === 'register' ? 'block' : 'none';
+    }
+
+    function switchPage(pageId, navItem) {
+        document.querySelectorAll('.page-section').forEach(p => p.style.display = 'none');
+        document.getElementById(pageId).style.display = 'block';
+        
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        navItem.classList.add('active');
+
+        if(pageId === 'pageHome') {
+            loadData(); loadSignatories();
+        } else if (pageId === 'pageSettings' && currentRole === 'Alpha-Admin') {
+            loadUsersList(); loadSignatoriesTable();
+        }
+    }
+
+    function logout() {
+        document.getElementById('mainApp').style.display = 'none';
+        document.getElementById('loginSection').style.display = 'block';
+        currentUser = ''; currentRole = 'User';
+        document.querySelectorAll('.alpha-only').forEach(el => el.style.display = 'none');
+        document.getElementById('pageSettings').innerHTML = ''; 
+    }
+
+    // Secure cache for settings HTML
+    let settingsHTML = document.getElementById('pageSettings').innerHTML;
+    document.getElementById('pageSettings').innerHTML = '';
+
+    function processForm(e, action, params, successCallback) {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        const originalText = btn.innerText;
+        btn.innerText = 'Processing...'; btn.disabled = true;
+        params.append('action', action);
+
+        fetch(webAppUrl, { method: 'POST', body: params })
+            .then(res => res.json())
+            .then(data => {
+                if(data.result === 'success') successCallback(data);
+                else alert('Error: ' + data.message);
+            })
+            .catch(err => alert('Network error.'))
+            .finally(() => { btn.innerText = originalText; btn.disabled = false; });
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+        const params = new URLSearchParams(new FormData(e.target));
+        processForm(e, 'login', params, (data) => {
+            e.target.reset();
+            currentUser = data.username;
+            currentRole = data.role;
+            document.getElementById('userRoleBadge').innerText = `${currentUser} (${currentRole})`;
+            
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'flex';
+            
+            if (currentRole === 'Alpha-Admin') {
+                document.getElementById('pageSettings').innerHTML = settingsHTML; 
+                document.querySelectorAll('.alpha-only').forEach(el => el.style.display = 'block');
+                document.getElementById('settingsNav').style.display = 'flex';
+                attachSignatoryListener();
+            } else {
+                document.getElementById('settingsNav').style.display = 'none';
+            }
+            
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            switchPage('pageHome', document.querySelector('.nav-item'));
+        });
+    });
+
+    // Preview Document Logic using Google Docs to PDF
+    function openPreview() {
+        const form = document.getElementById('entryForm');
+        
+        // Ensure form validation passes before previewing
+        if(!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const previewModal = document.getElementById('previewModal');
+        const previewLoading = document.getElementById('previewLoading');
+        const previewFrame = document.getElementById('previewFrame');
+        
+        // Setup gender & date
+        const genderUi = document.getElementById('genderUi').value;
+        document.getElementById('gender').value = (genderUi === 'Male') ? 'his' : 'her';
+        document.getElementById('formattedDate').value = formatToTextDate(document.getElementById('date').value);
+
+        // Open modal & show loading state
+        previewModal.style.display = 'flex';
+        previewLoading.style.display = 'block';
+        previewFrame.style.display = 'none';
+        previewFrame.src = ""; 
+
+        const params = new URLSearchParams(new FormData(form));
+        params.append('action', 'preview');
+
+        fetch(webAppUrl, { method: 'POST', body: params })
+            .then(res => res.json())
+            .then(data => {
+                if(data.result === 'success') {
+                    previewLoading.style.display = 'none';
+                    previewFrame.style.display = 'block';
+                    previewFrame.src = data.pdfUrl;
+                } else {
+                    previewLoading.innerText = 'Error: ' + data.message;
+                }
+            })
+            .catch(err => {
+                previewLoading.innerText = 'Network error during preview generation.';
+            });
+    }
+
+    document.getElementById('registerForm').addEventListener('submit', (e) => {
+        const params = new URLSearchParams(new FormData(e.target));
+        processForm(e, 'register', params, () => {
+            alert('Account created! You can now log in.');
+            e.target.reset(); toggleAuth('login');
+        });
+    });
+
+    document.getElementById('passwordForm').addEventListener('submit', (e) => {
+        const params = new URLSearchParams();
+        params.append('username', currentUser);
+        params.append('oldPassword', document.getElementById('oldPassword').value);
+        params.append('newPassword', document.getElementById('newPassword').value);
+        processForm(e, 'updatePassword', params, () => {
+            alert('Password updated successfully.');
+            e.target.reset();
+        });
+    });
+
+    function loadData() {
+        fetch(webAppUrl).then(res => res.json()).then(data => {
+            document.getElementById('controlNo').value = data.nextControlNo;
+            const tbody = document.querySelector('#recordsTable tbody');
+            tbody.innerHTML = '';
+            data.records.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${formatToTextDate(row[0])}</td><td>${row[1]}</td><td>${row[2]}</td>
+                    <td>${row[5]}, ${row[3]} ${row[4]}</td><td>${row[7]}</td><td>${row[9]}</td>
+                    <td class="action-btns">
+                        <button class="btn-small btn-edit" onclick='openEditModal(${JSON.stringify(row)})'>Edit</button>
+                        <button class="btn-small btn-delete" onclick="deleteRecord('${row[1]}')">Delete</button>
+                    </td>`;
+                tbody.appendChild(tr);
+            });
+        });
+    }
+
+    function openEditModal(row) {
+        document.getElementById('editModal').style.display = 'flex';
+        const fields = ['editDate', 'editControlNo', 'editRank', 'editFirstName', 'editMiddleName', 'editLastName', 'editQlf', 'editDutyStatus', 'editStation', 'editUnitOffice', 'editCommissionship', 'editGender', 'editReason'];
+        fields.forEach((id, i) => document.getElementById(id).value = row[i] || '');
+    }
+
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    document.getElementById('editForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const pin = await requestPin("Admin / Alpha-Admin Approval Required.");
+        if (!pin) return;
+        
+        const params = new URLSearchParams(new FormData(this));
+        params.append('adminPin', pin);
+        
+        processForm(e, 'update', params, () => {
+            alert('Record updated successfully.');
+            closeModal('editModal');
+            loadData();
+        });
+    });
+
+    async function deleteRecord(controlNo) {
+        const pin = await requestPin("Admin / Alpha-Admin Approval Required to Delete.");
+        if (!pin) return;
+        
+        fetch(webAppUrl, { method: 'POST', body: new URLSearchParams({action: 'delete', controlNo: controlNo, adminPin: pin}) })
+            .then(res => res.json())
+            .then(data => {
+                if(data.result === 'success') { alert('Deleted.'); loadData(); }
+                else alert('Action denied: ' + data.message);
+            });
+    }
+
+    document.getElementById('entryForm').addEventListener('submit', function(e) {
+        const genderUi = document.getElementById('genderUi').value;
+        document.getElementById('gender').value = (genderUi === 'Male') ? 'his' : 'her';
+        
+        // Push formatted date
+        document.getElementById('formattedDate').value = formatToTextDate(document.getElementById('date').value);
+        
+        const params = new URLSearchParams(new FormData(this));
+        processForm(e, 'create', params, () => {
+            document.getElementById('statusMessage').innerText = 'Success! Document generated.';
+            document.getElementById('statusMessage').style.color = '#10b981';
+            this.reset();
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            loadData();
+        });
+    });
+
+    // ALPHA-ADMIN FUNCTIONS
+    function loadUsersList() {
+        if(!document.getElementById('usersTable')) return;
+        fetch(webAppUrl, { method: 'POST', body: new URLSearchParams({action: 'getUsers'}) })
+            .then(res => res.json()).then(data => {
+                const tbody = document.querySelector('#usersTable tbody');
+                tbody.innerHTML = '';
+                data.users.forEach(u => {
+                    const safeId = u.username.replace(/\s+/g, '_');
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${u.username}</td>
+                            <td>
+                                <select id="role_${safeId}" style="padding: 6px; font-size: 13px;">
+                                    <option value="User" ${u.role==='User'?'selected':''}>User</option>
+                                    <option value="Admin" ${u.role==='Admin'?'selected':''}>Admin</option>
+                                    <option value="Alpha-Admin" ${u.role==='Alpha-Admin'?'selected':''}>Alpha-Admin</option>
+                                </select>
+                            </td>
+                            <td><input type="text" id="pin_${safeId}" value="${u.pin}" maxlength="6" style="padding: 6px; font-size: 13px; width: 80px;"></td>
+                            <td><button class="btn-small" onclick="saveUser('${u.username}', '${safeId}')" style="background-color: #3b82f6;">Save</button></td>
+                        </tr>`;
+                });
+            });
+    }
+
+    function saveUser(username, safeId) {
+        const params = new URLSearchParams({
+            targetUser: username,
+            newRole: document.getElementById(`role_${safeId}`).value,
+            newPin: document.getElementById(`pin_${safeId}`).value
+        });
+        fetch(webAppUrl, { method: 'POST', body: new URLSearchParams({action: 'updateUserRole', ...Object.fromEntries(params)}) })
+            .then(res=>res.json()).then(data => { alert(data.result === 'success' ? 'Updated.' : 'Error.'); loadUsersList(); });
+    }
+
+    function loadSignatories() {
+        fetch(webAppUrl, { method: 'POST', body: new URLSearchParams({action: 'getSignatories'}) })
+            .then(res => res.json()).then(data => {
+                const s1 = document.getElementById('sigNonMoney');
+                const s2 = document.getElementById('sigNonProperty');
+                const s3 = document.getElementById('sigChief');
+                s1.innerHTML = '<option value="">Select...</option>'; s2.innerHTML = '<option value="">Select...</option>'; s3.innerHTML = '<option value="">Select...</option>';
+                
+                if(data.signatories) {
+                    data.signatories.forEach(s => {
+                        const optionText = `<option value="${s[1]} ${s[2]}">${s[1]} ${s[2]} (${s[3]})</option>`;
+                        if(s[0] === 'Non-Money') s1.innerHTML += optionText;
+                        if(s[0] === 'Non-Property') s2.innerHTML += optionText;
+                        if(s[0] === 'Chief') s3.innerHTML += optionText;
+                    });
+                }
+            });
+    }
+
+    function loadSignatoriesTable() {
+        if(!document.getElementById('signatoriesTable')) return;
+        fetch(webAppUrl, { method: 'POST', body: new URLSearchParams({action: 'getSignatories'}) })
+            .then(res => res.json()).then(data => {
+                const tbody = document.querySelector('#signatoriesTable tbody');
+                tbody.innerHTML = '';
+                if(data.signatories) {
+                    data.signatories.forEach(s => {
+                        tbody.innerHTML += `<tr><td>${s[0]}</td><td>${s[1]}</td><td>${s[2]}</td><td>${s[3]}</td>
+                            <td class="action-btns">
+                                <button class="btn-small btn-edit" onclick="editSig('${s[0]}', '${s[1]}', '${s[2]}', '${s[3]}')">Edit</button>
+                                <button class="btn-small btn-delete" onclick="delSig('${s[0]}', '${s[2]}')">Delete</button>
+                            </td></tr>`;
+                    });
+                }
+            });
+    }
+
+    function attachSignatoryListener() {
+        const form = document.getElementById('signatoryForm');
+        if(form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const isEditing = form.getAttribute('data-editing') === 'true';
+                const actionType = isEditing ? 'editSignatory' : 'addSignatory'; 
+                
+                const params = new URLSearchParams({
+                    category: document.getElementById('sigCat').value,
+                    rank: document.getElementById('sigRank').value,
+                    name: document.getElementById('sigName').value,
+                    designation: document.getElementById('sigDesig').value,
+                    oldName: form.getAttribute('data-old-name')
+                });
+
+                processForm(e, actionType, params, () => {
+                    form.reset();
+                    form.setAttribute('data-editing', 'false');
+                    document.getElementById('sigSubmitBtn').innerText = 'Add';
+                    loadSignatoriesTable(); loadSignatories();
+                });
+            });
+        }
+    }
+
+    function editSig(category, rank, name, designation) {
+        document.getElementById('sigCat').value = category;
+        document.getElementById('sigRank').value = rank;
+        document.getElementById('sigName').value = name;
+        document.getElementById('sigDesig').value = designation;
+        
+        const form = document.getElementById('signatoryForm');
+        form.setAttribute('data-editing', 'true');
+        form.setAttribute('data-old-name', name);
+        document.getElementById('sigSubmitBtn').innerText = 'Update';
+    }
+
+    function delSig(category, name) {
+        if(!confirm('Delete this signatory?')) return;
+        fetch(webAppUrl, { method: 'POST', body: new URLSearchParams({action: 'deleteSignatory', category: category, name: name}) })
+            .then(res => res.json()).then(data => { loadSignatoriesTable(); loadSignatories(); });
+    }
+</script>
+</body>
+</html>
