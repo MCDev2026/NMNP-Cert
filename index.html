@@ -132,7 +132,20 @@
                             </select>
                         </div>
                         <div class="form-group"><label>Station</label><input type="text" id="station" name="station"></div>
-                        <div class="form-group"><label>Unit/Office</label><input type="text" id="unitOffice" name="unitOffice"></div>
+                        
+                        <!-- UPDATED: Unit/Office Dropdown -->
+                        <div class="form-group">
+                            <label>Unit/Office</label>
+                            <select id="unitOffice" name="unitOffice" required>
+                                <option value="">Select Unit/Office...</option>
+                                <option value="PRO 1 RHQ">PRO 1 RHQ</option>
+                                <option value="Pangasinan PPO">Pangasinan PPO</option>
+                                <option value="La Union PPO">La Union PPO</option>
+                                <option value="Ilocos Sur PPO">Ilocos Sur PPO</option>
+                                <option value="Ilocos Norte PPO">Ilocos Norte PPO</option>
+                            </select>
+                        </div>
+                        
                         <div class="form-group">
                             <label>Commissionship</label>
                             <select id="commissionship" name="commissionship" required>
@@ -154,7 +167,7 @@
                     </div>
                     <div class="button-group">
                         <button type="button" class="btn-secondary" onclick="openPreview()">Preview Document</button>
-                        <button type="submit" id="submitBtn">Submit Document</button>
+                        <button type="submit" id="submitBtn">Submit & Download PDF</button>
                     </div>
                 </form>
                 <div id="statusMessage" style="text-align:center; margin-top:15px; font-weight:600;"></div>
@@ -236,12 +249,24 @@
                 <div class="form-group"><label>Qlf</label><input type="text" id="editQlf" name="qlf"></div>
                 <div class="form-group"><label>Duty Status</label><input type="text" id="editDutyStatus" name="dutyStatus"></div>
                 <div class="form-group"><label>Station</label><input type="text" id="editStation" name="station"></div>
-                <div class="form-group"><label>Unit/Office</label><input type="text" id="editUnitOffice" name="unitOffice"></div>
+                
+                <!-- UPDATED: Unit/Office Dropdown for Edit Form -->
+                <div class="form-group">
+                    <label>Unit/Office</label>
+                    <select id="editUnitOffice" name="unitOffice" required>
+                        <option value="PRO 1 RHQ">PRO 1 RHQ</option>
+                        <option value="Pangasinan PPO">Pangasinan PPO</option>
+                        <option value="La Union PPO">La Union PPO</option>
+                        <option value="Ilocos Sur PPO">Ilocos Sur PPO</option>
+                        <option value="Ilocos Norte PPO">Ilocos Norte PPO</option>
+                    </select>
+                </div>
+                
                 <div class="form-group"><label>Commissionship</label><input type="text" id="editCommissionship" name="commissionship"></div>
                 <div class="form-group"><label>Gender</label><input type="text" id="editGender" name="gender"></div>
                 <div class="form-group full-width"><label>Reason</label><textarea id="editReason" name="reason" rows="2"></textarea></div>
             </div>
-            <button type="submit" style="background-color: #10b981;">Save Changes</button>
+            <button type="submit" style="background-color: #10b981;">Save Changes & Download PDF</button>
         </form>
     </div>
 </div>
@@ -276,11 +301,22 @@
     let currentUser = '';
     let currentRole = 'User';
 
-    // Formatter utility
+    // --- UTILITY FUNCTIONS ---
     function formatToTextDate(dateStr) {
         if(!dateStr) return '';
         const options = { year: 'numeric', month: 'long', day: '2-digit' };
         return new Date(dateStr).toLocaleDateString('en-US', options);
+    }
+
+    // PDF Downloader
+    function triggerDownload(url) {
+        if (!url) return;
+        const a = document.createElement('a');
+        a.href = url;
+        a.target = '_blank'; 
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     }
 
     // Custom PIN request
@@ -302,31 +338,66 @@
         });
     }
 
+    // --- AUTHENTICATION & PERSISTENCE ---
     function toggleAuth(view) {
         document.getElementById('loginSection').style.display = view === 'login' ? 'block' : 'none';
         document.getElementById('registerSection').style.display = view === 'register' ? 'block' : 'none';
     }
 
+    function showMainApp() {
+        document.getElementById('userRoleBadge').innerText = `${currentUser} (${currentRole})`;
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'flex';
+        
+        if (currentRole === 'Alpha-Admin') {
+            document.getElementById('pageSettings').innerHTML = settingsHTML; 
+            document.querySelectorAll('.alpha-only').forEach(el => el.style.display = 'block');
+            document.getElementById('settingsNav').style.display = 'flex';
+            attachSignatoryListener();
+        } else {
+            document.getElementById('settingsNav').style.display = 'none';
+        }
+        
+        document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        switchPage('pageHome', document.querySelector('.nav-item.active') || document.querySelector('.nav-item'));
+    }
+
+    function checkLoginStatus() {
+        const storedUser = localStorage.getItem('currentUser');
+        const storedRole = localStorage.getItem('currentRole');
+        if (storedUser && storedRole) {
+            currentUser = storedUser;
+            currentRole = storedRole;
+            showMainApp();
+        } else {
+            document.getElementById('loginSection').style.display = 'block';
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('currentRole');
+        
+        document.getElementById('mainApp').style.display = 'none';
+        document.getElementById('loginSection').style.display = 'block';
+        currentUser = ''; currentRole = 'User';
+        document.querySelectorAll('.alpha-only').forEach(el => el.style.display = 'none');
+        document.getElementById('pageSettings').innerHTML = ''; 
+    }
+
+    // --- UI NAVIGATION ---
     function switchPage(pageId, navItem) {
         document.querySelectorAll('.page-section').forEach(p => p.style.display = 'none');
         document.getElementById(pageId).style.display = 'block';
         
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        navItem.classList.add('active');
+        if(navItem) navItem.classList.add('active');
 
         if(pageId === 'pageHome') {
             loadData(); loadSignatories();
         } else if (pageId === 'pageSettings' && currentRole === 'Alpha-Admin') {
             loadUsersList(); loadSignatoriesTable();
         }
-    }
-
-    function logout() {
-        document.getElementById('mainApp').style.display = 'none';
-        document.getElementById('loginSection').style.display = 'block';
-        currentUser = ''; currentRole = 'User';
-        document.querySelectorAll('.alpha-only').forEach(el => el.style.display = 'none');
-        document.getElementById('pageSettings').innerHTML = ''; 
     }
 
     // Secure cache for settings HTML
@@ -350,32 +421,39 @@
             .finally(() => { btn.innerText = originalText; btn.disabled = false; });
     }
 
+    // --- FORM EVENT LISTENERS ---
     document.getElementById('loginForm').addEventListener('submit', (e) => {
         const params = new URLSearchParams(new FormData(e.target));
         processForm(e, 'login', params, (data) => {
             e.target.reset();
+            localStorage.setItem('currentUser', data.username);
+            localStorage.setItem('currentRole', data.role);
             currentUser = data.username;
             currentRole = data.role;
-            document.getElementById('userRoleBadge').innerText = `${currentUser} (${currentRole})`;
-            
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('mainApp').style.display = 'flex';
-            
-            if (currentRole === 'Alpha-Admin') {
-                document.getElementById('pageSettings').innerHTML = settingsHTML; 
-                document.querySelectorAll('.alpha-only').forEach(el => el.style.display = 'block');
-                document.getElementById('settingsNav').style.display = 'flex';
-                attachSignatoryListener();
-            } else {
-                document.getElementById('settingsNav').style.display = 'none';
-            }
-            
-            document.getElementById('date').value = new Date().toISOString().split('T')[0];
-            switchPage('pageHome', document.querySelector('.nav-item'));
+            showMainApp();
         });
     });
 
-    // Preview Document Logic using Google Docs to PDF
+    document.getElementById('registerForm').addEventListener('submit', (e) => {
+        const params = new URLSearchParams(new FormData(e.target));
+        processForm(e, 'register', params, () => {
+            alert('Account created! You can now log in.');
+            e.target.reset(); toggleAuth('login');
+        });
+    });
+
+    document.getElementById('passwordForm').addEventListener('submit', (e) => {
+        const params = new URLSearchParams();
+        params.append('username', currentUser);
+        params.append('oldPassword', document.getElementById('oldPassword').value);
+        params.append('newPassword', document.getElementById('newPassword').value);
+        processForm(e, 'updatePassword', params, () => {
+            alert('Password updated successfully.');
+            e.target.reset();
+        });
+    });
+
+    // --- PREVIEW LOGIC ---
     function openPreview() {
         const form = document.getElementById('entryForm');
         
@@ -419,25 +497,7 @@
             });
     }
 
-    document.getElementById('registerForm').addEventListener('submit', (e) => {
-        const params = new URLSearchParams(new FormData(e.target));
-        processForm(e, 'register', params, () => {
-            alert('Account created! You can now log in.');
-            e.target.reset(); toggleAuth('login');
-        });
-    });
-
-    document.getElementById('passwordForm').addEventListener('submit', (e) => {
-        const params = new URLSearchParams();
-        params.append('username', currentUser);
-        params.append('oldPassword', document.getElementById('oldPassword').value);
-        params.append('newPassword', document.getElementById('newPassword').value);
-        processForm(e, 'updatePassword', params, () => {
-            alert('Password updated successfully.');
-            e.target.reset();
-        });
-    });
-
+    // --- DATABASE OPERATIONS ---
     function loadData() {
         fetch(webAppUrl).then(res => res.json()).then(data => {
             document.getElementById('controlNo').value = data.nextControlNo;
@@ -460,11 +520,16 @@
     function openEditModal(row) {
         document.getElementById('editModal').style.display = 'flex';
         const fields = ['editDate', 'editControlNo', 'editRank', 'editFirstName', 'editMiddleName', 'editLastName', 'editQlf', 'editDutyStatus', 'editStation', 'editUnitOffice', 'editCommissionship', 'editGender', 'editReason'];
-        fields.forEach((id, i) => document.getElementById(id).value = row[i] || '');
+        fields.forEach((id, i) => {
+            if(document.getElementById(id)) {
+                document.getElementById(id).value = row[i] || '';
+            }
+        });
     }
 
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
+    // --- UPDATE RECORD ---
     document.getElementById('editForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const pin = await requestPin("Admin / Alpha-Admin Approval Required.");
@@ -473,10 +538,15 @@
         const params = new URLSearchParams(new FormData(this));
         params.append('adminPin', pin);
         
-        processForm(e, 'update', params, () => {
+        processForm(e, 'update', params, (data) => {
             alert('Record updated successfully.');
             closeModal('editModal');
             loadData();
+            
+            // Automatically download PDF if AppScript provides pdfUrl on update
+            if (data.pdfUrl) {
+                triggerDownload(data.pdfUrl);
+            }
         });
     });
 
@@ -492,6 +562,7 @@
             });
     }
 
+    // --- CREATE RECORD ---
     document.getElementById('entryForm').addEventListener('submit', function(e) {
         const genderUi = document.getElementById('genderUi').value;
         document.getElementById('gender').value = (genderUi === 'Male') ? 'his' : 'her';
@@ -500,16 +571,22 @@
         document.getElementById('formattedDate').value = formatToTextDate(document.getElementById('date').value);
         
         const params = new URLSearchParams(new FormData(this));
-        processForm(e, 'create', params, () => {
+        processForm(e, 'create', params, (data) => {
             document.getElementById('statusMessage').innerText = 'Success! Document generated.';
             document.getElementById('statusMessage').style.color = '#10b981';
+            
+            // Trigger automatic download
+            if (data.pdfUrl) {
+                triggerDownload(data.pdfUrl);
+            }
+            
             this.reset();
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
             loadData();
         });
     });
 
-    // ALPHA-ADMIN FUNCTIONS
+    // --- ALPHA-ADMIN FUNCTIONS ---
     function loadUsersList() {
         if(!document.getElementById('usersTable')) return;
         fetch(webAppUrl, { method: 'POST', body: new URLSearchParams({action: 'getUsers'}) })
@@ -625,6 +702,11 @@
         fetch(webAppUrl, { method: 'POST', body: new URLSearchParams({action: 'deleteSignatory', category: category, name: name}) })
             .then(res => res.json()).then(data => { loadSignatoriesTable(); loadSignatories(); });
     }
+
+    // Initialize logic on page load
+    window.onload = function() {
+        checkLoginStatus();
+    };
 </script>
 </body>
 </html>
