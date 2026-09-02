@@ -59,8 +59,6 @@
         #mainApp, #registerSection, #pageProfile, #pageSettings { display: none; }
         .alpha-only { display: none; }
         .button-group { display: flex; gap: 10px; margin-top: 15px; }
-        
-        .profile-pic { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid #3b82f6; margin-bottom: 10px; background-color: #334155; }
     </style>
 </head>
 <body>
@@ -93,7 +91,7 @@
 <div id="mainApp" style="width: 100%; display: none;">
     <div class="sidebar">
         <div class="sidebar-header">
-            <img id="sidebarProfilePic" class="profile-pic" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>" alt="Profile">
+            <img src="images/PNP LOGO.png" alt="PNP Logo" style="height: 70px; margin-bottom: 10px;">
             <div>RHSU Panel</div>
             <div id="userRoleBadge" style="font-size: 12px; font-weight: 400; color: #94a3b8; margin-top: 5px;"></div>
         </div>
@@ -114,7 +112,6 @@
             <div class="container">
                 <h2>Certification Form</h2>
                 <form id="entryForm">
-                    <!-- Form fields omitted for brevity, keeping structure intact -->
                     <div class="form-grid">
                         <div class="form-group"><label>Date</label><input type="date" id="date" name="date" required></div>
                         <input type="hidden" id="formattedDate" name="formattedDate">
@@ -210,18 +207,6 @@
         <!-- 2. PROFILE SETTINGS -->
         <div id="pageProfile" class="page-section container">
             <h2>Profile Settings</h2>
-
-            <div style="margin-bottom: 40px; padding-bottom: 30px; border-bottom: 1px solid #e2e8f0;">
-                <h3 style="margin-top: 0;">Profile Picture</h3>
-                <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
-                    <img id="settingsProfilePic" class="profile-pic" style="width: 100px; height: 100px; margin: 0;" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>">
-                    <div style="flex-grow: 1; max-width: 300px;">
-                        <input type="file" id="profilePicInput" accept="image/*" style="padding: 8px;">
-                    </div>
-                    <button type="button" id="uploadPicBtn" onclick="uploadProfilePicture()" style="width: auto; margin-top: 0;">Save Picture</button>
-                </div>
-            </div>
-
             <h3>Update Password</h3>
             <form id="passwordForm">
                 <div class="form-group"><label>Current Password</label><input type="password" id="oldPassword" required></div>
@@ -233,7 +218,6 @@
         <!-- 3. SYSTEM SETTINGS -->
         <div id="pageSettings" class="page-section container alpha-only">
             <h2>System Settings</h2>
-            <!-- System settings content maintained dynamically in JS -->
             <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 30px;">
                 <h3 style="margin-top:0; color: #334155;">User Management</h3>
                 <div class="table-wrapper">
@@ -278,7 +262,6 @@
         <span class="close-btn" onclick="closeModal('editModal')">&times;</span>
         <h2>Edit Record</h2>
         <form id="editForm">
-            <!-- Edit Form Fields maintained... -->
             <input type="hidden" id="editControlNo" name="controlNo">
             <div class="form-grid">
                 <div class="form-group"><label>Date</label><input type="date" id="editDate" name="date" required></div>
@@ -366,18 +349,10 @@
     let currentUser = '';
     let currentRole = '';
 
-    const defaultAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>";
-
     // Custom Alert Function
     function showCustomAlert(message) {
         document.getElementById('alertMessage').innerText = message;
         document.getElementById('alertModal').style.display = 'flex';
-    }
-
-    function updateProfileImages(fileId) {
-        const url = fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : defaultAvatar;
-        document.getElementById('sidebarProfilePic').src = url;
-        document.getElementById('settingsProfilePic').src = url;
     }
 
     function formatToTextDate(dateStr) {
@@ -440,12 +415,10 @@
     function checkLoginStatus() {
         const storedUser = localStorage.getItem('currentUser');
         const storedRole = localStorage.getItem('currentRole');
-        const storedPic = localStorage.getItem('currentPic');
         
         if (storedUser && storedRole) {
             currentUser = storedUser;
             currentRole = storedRole;
-            updateProfileImages(storedPic !== 'undefined' ? storedPic : null);
             showMainApp();
         } else {
             document.getElementById('loginSection').style.display = 'flex';
@@ -455,7 +428,6 @@
     function logout() {
         localStorage.removeItem('currentUser');
         localStorage.removeItem('currentRole');
-        localStorage.removeItem('currentPic');
         
         document.getElementById('mainApp').style.display = 'none';
         document.getElementById('loginSection').style.display = 'flex';
@@ -498,75 +470,16 @@
             .finally(() => { btn.innerText = originalText; btn.disabled = false; });
     }
 
-    // Profile Picture Resize & Upload
-    function uploadProfilePicture() {
-        const fileInput = document.getElementById('profilePicInput');
-        if (!fileInput.files || fileInput.files.length === 0) {
-            showCustomAlert('Please select an image first.');
-            return;
-        }
-
-        const btn = document.getElementById('uploadPicBtn');
-        btn.innerText = 'Uploading...'; btn.disabled = true;
-
-        const file = fileInput.files[0];
-        const reader = new FileReader();
-
-        reader.onload = function(e) {
-            const img = new Image();
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                const maxSize = 400; // Resize to ensure AppScript doesn't hit payload limit
-                let width = img.width;
-                let height = img.height;
-                if (width > height && width > maxSize) { height *= maxSize / width; width = maxSize; }
-                else if (height > maxSize) { width *= maxSize / height; height = maxSize; }
-                
-                canvas.width = width; canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                
-                const dataUrl = canvas.toDataURL(file.type);
-                const base64Data = dataUrl.split(',')[1];
-                
-                const params = new URLSearchParams();
-                params.append('action', 'uploadProfilePic');
-                params.append('username', currentUser);
-                params.append('mimeType', file.type);
-                params.append('base64', base64Data);
-
-                fetch(webAppUrl, { method: 'POST', body: params })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.result === 'success') {
-                            showCustomAlert('Profile picture updated successfully.');
-                            localStorage.setItem('currentPic', data.fileId);
-                            updateProfileImages(data.fileId);
-                            fileInput.value = '';
-                        } else {
-                            showCustomAlert('Error: ' + data.message);
-                        }
-                    })
-                    .catch(err => showCustomAlert('Network error during upload.'))
-                    .finally(() => { btn.innerText = 'Save Picture'; btn.disabled = false; });
-            }
-            img.src = e.target.result;
-        }
-        reader.readAsDataURL(file);
-    }
-
     document.getElementById('loginForm').addEventListener('submit', (e) => {
         const params = new URLSearchParams(new FormData(e.target));
         processForm(e, 'login', params, (data) => {
             e.target.reset();
             localStorage.setItem('currentUser', data.username);
             localStorage.setItem('currentRole', data.role);
-            localStorage.setItem('currentPic', data.profilePicId || '');
             
             currentUser = data.username;
             currentRole = data.role;
             
-            updateProfileImages(data.profilePicId);
             showMainApp();
         });
     });
