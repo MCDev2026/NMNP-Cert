@@ -1,751 +1,477 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RHSU Certification System</title>
-    
-    <link rel="icon" type="image/png" href="images/RHSU LOGO.png">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Poppins', sans-serif; background-color: #f0f4f8; margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden;}
-        .sidebar { width: 260px; background-color: #1e293b; color: white; display: flex; flex-direction: column; padding-top: 20px; transition: 0.3s; box-shadow: 2px 0 10px rgba(0,0,0,0.1);}
-        .sidebar-header { text-align: center; margin-bottom: 30px; font-weight: 600; font-size: 18px; letter-spacing: 0.5px;}
-        .nav-item { padding: 16px 24px; cursor: pointer; display: flex; align-items: center; border-bottom: 1px solid #334155; transition: all 0.3s ease;}
-        .nav-item:hover { background-color: #334155; padding-left: 30px;}
-        .nav-item .dot { height: 10px; width: 10px; background-color: #ef4444; border-radius: 50%; margin-right: 15px; transition: 0.3s;}
-        .nav-item.active .dot { background-color: #10b981; box-shadow: 0 0 8px #10b981;}
-        .main-wrapper { flex-grow: 1; overflow-y: auto; padding: 30px; position: relative;}
-        .header-title { display: flex; align-items: center; justify-content: center; margin-bottom: 30px; background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);}
-        .header-title img { height: 70px; margin-right: 20px; }
-        .header-title h1 { margin: 0; color: #1e293b; font-size: 26px; font-weight: 600;}
-        .container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 35px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px;}
-        
-        .auth-container { max-width: 420px; margin: 10vh auto; background: #fff; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
-        .login-square { width: 400px; height: 400px; max-width: 400px; border-radius: 24px; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; }
-        
-        h2 { text-align: center; color: #1e293b; margin-bottom: 25px; font-weight: 600; }
-        h3 { color: #334155; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-        .form-group { display: flex; flex-direction: column; margin-bottom: 5px; }
-        .form-group.full-width { grid-column: 1 / -1; }
-        label { font-weight: 500; margin-bottom: 8px; font-size: 13px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;}
-        input, select, textarea { padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 14px; width: 100%; box-sizing: border-box; font-family: 'Poppins', sans-serif; transition: border-color 0.3s;}
-        input:focus, select:focus, textarea:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);}
-        input[readonly] { background-color: #f1f5f9; cursor: not-allowed; color: #64748b;}
-        button { background-color: #2563eb; color: white; border: none; padding: 14px 24px; font-size: 15px; border-radius: 12px; cursor: pointer; font-weight: 600; width: 100%; margin-top: 15px; transition: background-color 0.3s, transform 0.1s;}
-        button:hover { background-color: #1d4ed8; }
-        button:active { transform: scale(0.98); }
-        .btn-secondary { background-color: #64748b; }
-        .btn-secondary:hover { background-color: #475569; }
-        .toggle-link { text-align: center; margin-top: 20px; color: #2563eb; cursor: pointer; font-size: 14px; font-weight: 500;}
-        .toggle-link:hover { text-decoration: underline; }
-        .table-wrapper { overflow-x: auto; margin-top: 25px; border-radius: 12px; border: 1px solid #e2e8f0;}
-        table { width: 100%; border-collapse: collapse; min-width: 1000px; font-size: 14px; }
-        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #e2e8f0;}
-        th { background-color: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;}
-        tbody tr:hover { background-color: #f1f5f9; }
-        .action-btns { display: flex; gap: 8px; }
-        .btn-small { padding: 8px 14px; font-size: 12px; width: auto; margin:0; border-radius: 8px;}
-        .btn-edit { background-color: #f59e0b; color: #fff; }
-        .btn-edit:hover { background-color: #d97706; }
-        .btn-delete { background-color: #ef4444; }
-        .btn-delete:hover { background-color: #dc2626; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); padding: 40px; border-radius: 20px; width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto;}
-        .modal-small { max-width: 400px; text-align: center; }
-        .close-btn { float: right; cursor: pointer; font-size: 24px; font-weight: bold; color: #64748b; transition: color 0.3s;}
-        .close-btn:hover { color: #0f172a; }
-        #mainApp, #registerSection, #pageProfile, #pageSettings { display: none; }
-        .alpha-only { display: none; }
-        .button-group { display: flex; gap: 10px; margin-top: 15px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<title>RHSU Certification System</title>
+<link rel="icon" type="image/png" href="images/RHSU LOGO.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f7fb;--surface:#fff;--surface-2:#f8fafc;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;
+  --primary:#2563eb;--primary-2:#1d4ed8;--success:#059669;--warning:#d97706;--danger:#dc2626;
+  --sidebar:#0f172a;--sidebar-2:#172554;--sidebar-text:#cbd5e1;--radius:18px;
+  --shadow:0 12px 32px rgba(15,23,42,.07);--shadow-lg:0 24px 70px rgba(15,23,42,.15);
+  --font:'Inter','Poppins',sans-serif;--sidebar-width:270px;
+}
+html[data-theme="dark"]{
+  --bg:#0b1120;--surface:#111827;--surface-2:#172033;--text:#e5e7eb;--muted:#94a3b8;--border:#263247;
+  --sidebar:#060b16;--sidebar-2:#111c36;--shadow:0 12px 32px rgba(0,0,0,.22);--shadow-lg:0 24px 70px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:var(--font);color:var(--text);background:var(--bg)}
+body{overflow:hidden}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+#loginSection,#registerSection{display:none}
+.auth-shell{min-height:100vh;display:grid;place-items:center;padding:28px;background:
+ radial-gradient(circle at 10% 10%,rgba(37,99,235,.13),transparent 30%),
+ radial-gradient(circle at 90% 90%,rgba(5,150,105,.12),transparent 28%),var(--bg)}
+.auth-card{width:min(1040px,100%);min-height:620px;display:grid;grid-template-columns:1.05fr .95fr;background:var(--surface);border:1px solid var(--border);border-radius:28px;overflow:hidden;box-shadow:var(--shadow-lg)}
+.auth-brand{padding:55px;background:linear-gradient(145deg,#0f172a,#172554 62%,#1e3a8a);color:#fff;position:relative;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.auth-brand:after{content:"";position:absolute;width:360px;height:360px;border-radius:50%;right:-140px;bottom:-150px;background:rgba(255,255,255,.06)}
+.auth-brand img{width:82px;height:82px;object-fit:contain;margin-bottom:28px}
+.auth-brand h1{font-size:34px;line-height:1.12;margin:0 0 14px;font-weight:800}
+.auth-brand p{color:#cbd5e1;line-height:1.7;max-width:470px;margin:0}
+.brand-chip{display:inline-flex;width:max-content;align-items:center;gap:8px;margin-top:30px;padding:9px 13px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);border-radius:999px;font-size:12px}
+.auth-panel{padding:55px;display:flex;flex-direction:column;justify-content:center}
+.auth-panel h2{margin:0 0 8px;font-size:26px}
+.auth-panel .sub{margin:0 0 28px;color:var(--muted);font-size:14px}
+.field{margin-bottom:17px}.field label{display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:0 0 8px}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:12px;padding:12px 14px;outline:none;transition:.2s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(37,99,235,.10)}
+.input-wrap{position:relative}.input-wrap input{padding-right:46px}.input-action{position:absolute;right:7px;top:7px;border:0;background:transparent;color:var(--muted);padding:7px;border-radius:8px}
+.btn{border:0;border-radius:12px;padding:12px 17px;font-weight:700;transition:.2s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn:disabled{opacity:.55;cursor:not-allowed}.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-2)}
+.btn-secondary{background:var(--surface-2);color:var(--text);border:1px solid var(--border)}.btn-secondary:hover{background:var(--border)}
+.btn-danger{background:var(--danger);color:#fff}.btn-success{background:var(--success);color:#fff}.btn-warning{background:var(--warning);color:#fff}
+.btn-full{width:100%}.link-btn{border:0;background:none;color:var(--primary);font-weight:700;padding:10px 0;cursor:pointer}
+.auth-footer{text-align:center;margin-top:18px;font-size:13px;color:var(--muted)}
+.app{display:none;height:100vh}.sidebar{width:var(--sidebar-width);flex:0 0 var(--sidebar-width);height:100vh;background:linear-gradient(180deg,var(--sidebar),var(--sidebar-2));color:#fff;display:flex;flex-direction:column;padding:20px 14px;transition:.25s;z-index:20}
+.brand{display:flex;align-items:center;gap:12px;padding:8px 10px 22px}.brand img{width:48px;height:48px;object-fit:contain}.brand strong{font-size:15px}.brand small{display:block;color:#94a3b8;margin-top:3px;font-size:11px}
+.user-mini{display:flex;align-items:center;gap:11px;margin:0 4px 18px;padding:11px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.07)}
+.avatar{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#3b82f6,#06b6d4);color:#fff;font-weight:800;font-size:13px;flex:0 0 auto}.user-mini .who{min-width:0}.user-mini b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}.user-mini span{color:#94a3b8;font-size:11px}
+.nav-label{font-size:10px;color:#64748b;font-weight:800;letter-spacing:.12em;padding:10px 11px 7px}.nav{display:flex;flex-direction:column;gap:4px}.nav-item{border:0;background:transparent;color:var(--sidebar-text);display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:11px;text-align:left;font-weight:600;font-size:13px;width:100%;transition:.2s}.nav-item:hover{background:rgba(255,255,255,.07);color:#fff}.nav-item.active{background:rgba(59,130,246,.18);color:#fff}.nav-icon{width:21px;text-align:center;font-size:15px}.nav-spacer{flex:1}.logout-nav{color:#cbd5e1}.main{min-width:0;flex:1;height:100vh;overflow:auto;background:var(--bg)}.topbar{height:76px;position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 30px}.topbar-left{display:flex;align-items:center;gap:14px}.mobile-toggle,.collapse-toggle{border:1px solid var(--border);background:var(--surface);color:var(--text);width:40px;height:40px;border-radius:11px}.mobile-toggle{display:none}.page-title h1{font-size:20px;margin:0}.page-title p{font-size:11px;color:var(--muted);margin:3px 0 0}.top-actions{display:flex;gap:8px}.icon-btn{border:1px solid var(--border);background:var(--surface);color:var(--muted);width:40px;height:40px;border-radius:11px}.content{padding:28px;max-width:1500px;margin:auto}.page{display:none}.page.active{display:block;animation:fade .2s ease}@keyframes fade{from{opacity:.3;transform:translateY(3px)}to{opacity:1;transform:none}}
+.hero{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:25px 28px;background:linear-gradient(120deg,#0f172a,#172554);color:#fff;border-radius:20px;margin-bottom:22px;box-shadow:var(--shadow)}.hero h2{margin:0 0 6px;font-size:24px}.hero p{margin:0;color:#cbd5e1;font-size:13px}.hero-logo{height:62px;opacity:.95}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:23px}.card+.card{margin-top:20px}.card-head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:19px}.card-head h2,.card-head h3{margin:0;font-size:17px}.muted{color:var(--muted);font-size:12px}.form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.full{grid-column:1/-1}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.actions .btn{width:auto}.status{min-height:20px;margin-top:12px;text-align:center;font-size:13px;font-weight:700}.table-wrap{overflow:auto;border:1px solid var(--border);border-radius:13px}.table{width:100%;border-collapse:collapse;min-width:980px;font-size:12px}.table th,.table td{padding:12px 13px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle}.table th{background:var(--surface-2);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.07em}.table tr:last-child td{border-bottom:0}.table tbody tr:hover{background:var(--surface-2)}.table-actions{display:flex;gap:6px}.small-btn{padding:7px 10px;font-size:11px;border-radius:8px}.badge{display:inline-flex;align-items:center;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:800;background:var(--surface-2);color:var(--muted);border:1px solid var(--border)}.badge.success{color:#047857;background:rgba(16,185,129,.1)}.badge.warning{color:#b45309;background:rgba(245,158,11,.1)}
+.settings-grid{display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px}.settings-tabs{display:flex;flex-direction:column;gap:5px}.settings-tab{border:0;background:transparent;color:var(--muted);padding:11px 13px;border-radius:10px;text-align:left;font-weight:700;font-size:12px}.settings-tab.active{background:rgba(37,99,235,.1);color:var(--primary)}.settings-panel{display:none}.settings-panel.active{display:block}.profile-head{display:flex;align-items:center;gap:16px;padding-bottom:20px;border-bottom:1px solid var(--border);margin-bottom:22px}.profile-avatar{width:70px;height:70px;border-radius:20px;display:grid;place-items:center;background:linear-gradient(135deg,#2563eb,#0ea5e9);color:#fff;font-size:22px;font-weight:800}.profile-head h2{margin:0 0 5px;font-size:19px}.profile-head p{margin:0;color:var(--muted);font-size:12px}.pref-row{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:15px 0;border-bottom:1px solid var(--border)}.pref-row:last-child{border-bottom:0}.pref-row strong{font-size:13px}.pref-row small{display:block;color:var(--muted);font-size:11px;margin-top:4px}.switch{width:44px;height:24px;border-radius:999px;border:0;background:#cbd5e1;position:relative;padding:0}.switch:after{content:"";position:absolute;width:18px;height:18px;top:3px;left:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}.switch.on{background:var(--primary)}.switch.on:after{left:23px}.theme-options{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.theme-option{padding:12px;border:1px solid var(--border);background:var(--surface);border-radius:12px;text-align:center;color:var(--muted);font-size:11px;font-weight:700}.theme-option.active{border-color:var(--primary);color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.modal{display:none;position:fixed;inset:0;background:rgba(2,6,23,.62);backdrop-filter:blur(5px);z-index:100;align-items:center;justify-content:center;padding:20px}.modal.open{display:flex}.modal-box{width:min(820px,100%);max-height:92vh;overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow-lg);padding:25px}.modal-small{width:min(430px,100%)}.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}.modal-head h2{margin:0;font-size:19px}.close{border:0;background:var(--surface-2);color:var(--muted);width:34px;height:34px;border-radius:9px;font-size:20px}.loading{padding:35px;text-align:center;color:var(--muted);font-size:13px}
+body.compact .content{padding:18px}body.compact .card{padding:18px}body.compact .form-grid{gap:10px}body.compact .table th,body.compact .table td{padding:8px 10px}
+.sidebar.collapsed{width:78px;flex-basis:78px}.sidebar.collapsed .brand-text,.sidebar.collapsed .user-mini .who,.sidebar.collapsed .nav-label,.sidebar.collapsed .nav-item span:not(.nav-icon){display:none}.sidebar.collapsed .brand{justify-content:center}.sidebar.collapsed .user-mini{justify-content:center}.sidebar.collapsed .nav-item{justify-content:center}
+@media(max-width:980px){.auth-card{grid-template-columns:1fr}.auth-brand{display:none}.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.settings-grid{grid-template-columns:1fr}.settings-tabs{flex-direction:row;overflow:auto}.settings-tab{white-space:nowrap}.mobile-toggle{display:block}.collapse-toggle{display:none}.sidebar{position:fixed;left:-290px;top:0}.sidebar.open{left:0;box-shadow:20px 0 60px rgba(0,0,0,.25)}.topbar{padding:0 18px}.content{padding:18px}}
+@media(max-width:620px){.auth-panel{padding:30px}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}.hero{padding:20px}.hero-logo{display:none}.actions .btn{width:100%}.top-actions{display:none}.card{padding:18px}.theme-options{grid-template-columns:1fr}.profile-head{align-items:flex-start}}
+</style>
 </head>
 <body>
-
-<!-- Authentication Sections -->
-<div id="loginSection" class="auth-container login-square">
-    <div style="text-align: center; margin-bottom: 20px;">
-        <img src="images/RHSU LOGO.png" alt="RHSU Logo" style="height: 70px; margin-bottom: 10px;">
-        <h2 style="margin-top: 0; margin-bottom: 0;">NMNP Portal</h2>
+<!-- Authentication -->
+<section id="loginSection" class="auth-shell">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <img src="images/PRO 1 LOGO.png" alt="PRO 1">
+      <h1>RHSU Certification System</h1>
+      <p>Securely prepare, review and manage certification records through the existing RHSU backend workflow.</p>
+      <div class="brand-chip">● NMNP Portal &nbsp;•&nbsp; Secure access</div>
     </div>
-    <form id="loginForm">
-        <div class="form-group"><label>Username</label><input type="text" id="loginUser" name="username" required></div>
-        <div class="form-group"><label>Password</label><input type="password" id="loginPass" name="password" required></div>
-        <button type="submit">Login</button>
-    </form>
-    <div class="toggle-link" onclick="toggleAuth('register')">Create an Account</div>
-</div>
-
-<div id="registerSection" class="auth-container">
-    <h2>Create Account</h2>
-    <form id="registerForm">
-        <div class="form-group"><label>New Username</label><input type="text" id="regUser" name="username" required></div>
-        <div class="form-group"><label>New Password</label><input type="password" id="regPass" name="password" required></div>
-        <button type="submit">Register</button>
-    </form>
-    <div class="toggle-link" onclick="toggleAuth('login')">Back to Login</div>
-</div>
-
-<!-- Main Application UI -->
-<div id="mainApp" style="width: 100%; display: none;">
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <img src="images/PNP LOGO.png" alt="PNP Logo" style="height: 70px; margin-bottom: 10px;">
-            <div>RHSU Panel</div>
-            <div id="userRoleBadge" style="font-size: 12px; font-weight: 400; color: #94a3b8; margin-top: 5px;"></div>
-        </div>
-        <div class="nav-item active" onclick="switchPage('pageHome', this)"><div class="dot"></div>Homepage</div>
-        <div class="nav-item" onclick="switchPage('pageProfile', this)"><div class="dot"></div>Profile Settings</div>
-        <div class="nav-item alpha-only" id="settingsNav" onclick="switchPage('pageSettings', this)"><div class="dot"></div>System Settings</div>
-        <div class="nav-item" onclick="logout()"><div class="dot" style="background-color: #64748b;"></div>Log Out</div>
+    <div class="auth-panel">
+      <h2>Welcome back</h2><p class="sub">Sign in to continue to your workspace.</p>
+      <form id="loginForm">
+        <div class="field"><label>Username</label><input id="loginUser" name="username" autocomplete="username" required></div>
+        <div class="field"><label>Password</label><div class="input-wrap"><input id="loginPass" name="password" type="password" autocomplete="current-password" required><button class="input-action" type="button" data-toggle-password="loginPass">◉</button></div></div>
+        <button class="btn btn-primary btn-full" type="submit">Sign In</button>
+      </form>
+      <div class="auth-footer">Don't have an account? <button class="link-btn" type="button" onclick="toggleAuth('register')">Create one</button></div>
     </div>
+  </div>
+</section>
 
-    <div class="main-wrapper">
-        <div class="header-title">
-            <img src="images/PRO 1 LOGO.png" alt="PRO 1 Logo">
-            <h1>RHSU CERTIFICATION SYSTEM</h1>
-        </div>
-
-        <!-- 1. HOMEPAGE -->
-        <div id="pageHome" class="page-section">
-            <div class="container">
-                <h2>Certification Form</h2>
-                <form id="entryForm">
-                    <div class="form-grid">
-                        <div class="form-group"><label>Date</label><input type="date" id="date" name="date" required></div>
-                        <input type="hidden" id="formattedDate" name="formattedDate">
-                        
-                        <div class="form-group"><label>Control No</label><input type="text" id="controlNo" name="controlNo" required placeholder="Enter Control No..."></div>
-                        
-                        <div class="form-group">
-                            <label>Rank</label>
-                            <select id="rank" name="rank" required>
-                                <option value="">Select Rank...</option>
-                                <option value="PBGEN">PBGEN</option><option value="PCOL">PCOL</option>
-                                <option value="PLTCOL">PLTCOL</option><option value="PMAJ">PMAJ</option>
-                                <option value="PCPT">PCPT</option><option value="PLT">PLT</option>
-                                <option value="PEMS">PEMS</option><option value="PCMS">PCMS</option>
-                                <option value="PSMS">PSMS</option><option value="PMSg">PMSg</option>
-                                <option value="PSSg">PSSg</option><option value="PCpl">PCpl</option>
-                                <option value="Pat">Pat</option><option value="NUP">NUP</option>
-                            </select>
-                        </div>
-                        <div class="form-group"><label>First Name</label><input type="text" id="firstName" name="firstName" required></div>
-                        <div class="form-group"><label>Middle Name</label><input type="text" id="middleName" name="middleName" required></div>
-                        <div class="form-group"><label>Last Name</label><input type="text" id="lastName" name="lastName" required></div>
-                        <div class="form-group"><label>Qlf</label><input type="text" id="qlf" name="qlf" required></div>
-                        <div class="form-group">
-                            <label>Duty Status</label>
-                            <select id="dutyStatus" name="dutyStatus" required>
-                                <option value="">Select Status...</option>
-                                <option value="Active">Active</option><option value="Suspended">Suspended</option>
-                                <option value="Retired">Retired</option><option value="Resigned">Resigned</option>
-                                <option value="Deceased">Deceased</option>
-                            </select>
-                        </div>
-                        <div class="form-group"><label>Station</label><input type="text" id="station" name="station" required></div>
-                        
-                        <div class="form-group">
-                            <label>Unit/Office</label>
-                            <select id="unitOffice" name="unitOffice" required>
-                                <option value="">Select Unit/Office...</option>
-                                <option value="PRO 1 RHQ">PRO 1 RHQ</option>
-                                <option value="Pangasinan PPO">Pangasinan PPO</option>
-                                <option value="La Union PPO">La Union PPO</option>
-                                <option value="Ilocos Sur PPO">Ilocos Sur PPO</option>
-                                <option value="Ilocos Norte PPO">Ilocos Norte PPO</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Commissionship</label>
-                            <select id="commissionship" name="commissionship" required>
-                                <option value="">Select...</option><option value="PCO">PCO</option>
-                                <option value="PNCO">PNCO</option><option value="NUP">NUP</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Gender</label>
-                            <select id="gender" name="gender" required>
-                                <option value="">Select...</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group"><label>Cert. of Non-Money</label><select id="sigNonMoney" name="sigNonMoney" required></select></div>
-                        <div class="form-group"><label>Cert. of Non-Property</label><select id="sigNonProperty" name="sigNonProperty" required></select></div>
-                        <div class="form-group"><label>Noted by (Chief)</label><select id="sigChief" name="sigChief" required></select></div>
-
-                        <div class="form-group full-width"><label>Reason</label><textarea id="reason" name="reason" rows="3" required></textarea></div>
-                    </div>
-                    <div class="button-group">
-                        <button type="button" class="btn-secondary" onclick="openPreview()">Preview Document</button>
-                        <button type="submit" id="submitBtn">Submit & Download PDF</button>
-                    </div>
-                </form>
-                <div id="statusMessage" style="text-align:center; margin-top:15px; font-weight:600;"></div>
-            </div>
-
-            <div class="container">
-                <h2>Data Records</h2>
-                <div class="table-wrapper">
-                    <table id="recordsTable">
-                        <thead>
-                            <tr>
-                                <th>Date</th><th>Control No</th><th>Rank</th><th>Name</th>
-                                <th>Duty Status</th><th>Unit/Office</th><th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody><tr><td colspan="7" style="text-align:center; padding: 20px;">Loading...</td></tr></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- 2. PROFILE SETTINGS -->
-        <div id="pageProfile" class="page-section container">
-            <h2>Profile Settings</h2>
-            <h3>Update Password</h3>
-            <form id="passwordForm">
-                <div class="form-group"><label>Current Password</label><input type="password" id="oldPassword" required></div>
-                <div class="form-group"><label>New Password</label><input type="password" id="newPassword" required></div>
-                <button type="submit">Update Password</button>
-            </form>
-        </div>
-
-        <!-- 3. SYSTEM SETTINGS -->
-        <div id="pageSettings" class="page-section container alpha-only">
-            <h2>System Settings</h2>
-            <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 30px;">
-                <h3 style="margin-top:0; color: #334155;">User Management</h3>
-                <div class="table-wrapper">
-                    <table id="usersTable">
-                        <thead><tr><th>Username</th><th>Role</th><th>PIN</th><th>Action</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0;">
-                <h3 style="margin-top:0; color: #334155;">Signatories</h3>
-                <form id="signatoryForm" data-editing="false" data-old-name="" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 15px; align-items: end; margin-bottom: 20px;">
-                    <div class="form-group" style="margin:0;"><label>Category</label><select id="sigCat" required><option value="Non-Money">Non-Money</option><option value="Non-Property">Non-Property</option><option value="Chief">Chief</option></select></div>
-                    <div class="form-group" style="margin:0;"><label>Rank</label><input type="text" id="sigRank" required></div>
-                    <div class="form-group" style="margin:0;"><label>Name</label><input type="text" id="sigName" required></div>
-                    <div class="form-group" style="margin:0;"><label>Designation</label><input type="text" id="sigDesig" required></div>
-                    <button type="submit" id="sigSubmitBtn" style="margin:0; height: 46px; border-radius: 12px;">Add</button>
-                </form>
-                <div class="table-wrapper">
-                    <table id="signatoriesTable">
-                        <thead><tr><th>Category</th><th>Rank</th><th>Name</th><th>Designation</th><th>Action</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+<section id="registerSection" class="auth-shell">
+  <div class="auth-card">
+    <div class="auth-brand"><img src="images/PRO 1 LOGO.png" alt="PRO 1"><h1>Create your account</h1><p>Registration continues to use the existing Users sheet and backend registration action.</p></div>
+    <div class="auth-panel">
+      <h2>Create account</h2><p class="sub">Enter your credentials below.</p>
+      <form id="registerForm">
+        <div class="field"><label>Username</label><input id="regUser" name="username" autocomplete="username" required></div>
+        <div class="field"><label>Password</label><div class="input-wrap"><input id="regPass" name="password" type="password" autocomplete="new-password" required><button class="input-action" type="button" data-toggle-password="regPass">◉</button></div></div>
+        <button class="btn btn-primary btn-full" type="submit">Create Account</button>
+      </form>
+      <div class="auth-footer"><button class="link-btn" type="button" onclick="toggleAuth('login')">Back to sign in</button></div>
     </div>
-</div>
+  </div>
+</section>
 
-<!-- Custom Alert Modal -->
-<div id="alertModal" class="modal">
-    <div class="modal-content modal-small">
-        <h3 id="alertMessage" style="margin-bottom: 20px; font-weight: 500; font-size: 16px; color: #1e293b;"></h3>
-        <button type="button" onclick="closeModal('alertModal')" style="width: auto; padding: 10px 30px;">OK</button>
-    </div>
-</div>
+<!-- Application -->
+<div id="mainApp" class="app">
+  <aside id="sidebar" class="sidebar">
+    <div class="brand"><img src="images/PNP LOGO.png" alt="PNP"><div class="brand-text"><strong>RHSU Panel</strong><small>Certification System</small></div></div>
+    <div class="user-mini"><div class="avatar" id="sideAvatar">U</div><div class="who"><b id="sideUser">User</b><span id="sideRole">User</span></div></div>
+    <div class="nav-label">WORKSPACE</div>
+    <nav class="nav">
+      <button class="nav-item active" data-page="pageHome"><span class="nav-icon">⌂</span><span>Homepage</span></button>
+      <button class="nav-item" data-page="pageProfile"><span class="nav-icon">◉</span><span>Profile Settings</span></button>
+      <button class="nav-item alpha-only" id="settingsNav" data-page="pageSettings"><span class="nav-icon">⚙</span><span>System Settings</span></button>
+    </nav>
+    <div class="nav-spacer"></div>
+    <button class="nav-item logout-nav" id="logoutBtn"><span class="nav-icon">↪</span><span>Log Out</span></button>
+  </aside>
 
-<!-- Edit Record Modal -->
-<div id="editModal" class="modal">
-    <div class="modal-content">
-        <span class="close-btn" onclick="closeModal('editModal')">&times;</span>
-        <h2>Edit Record</h2>
-        <form id="editForm">
-            <input type="hidden" id="editControlNo" name="controlNo">
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="mobile-toggle" id="mobileToggle" type="button">☰</button>
+        <button class="collapse-toggle" id="collapseToggle" type="button">‹</button>
+        <div class="page-title"><h1 id="topTitle">Homepage</h1><p id="topSubtitle">Certification records and document generation</p></div>
+      </div>
+      <div class="top-actions"><button class="icon-btn" id="refreshBtn" title="Refresh">↻</button><button class="icon-btn" id="themeQuickBtn" title="Toggle theme">◐</button></div>
+    </header>
+
+    <div class="content">
+      <section id="pageHome" class="page active">
+        <div class="hero"><div><h2>Certification Workspace</h2><p>Create, preview and manage NMNP certification records.</p></div><img class="hero-logo" src="images/PRO 1 LOGO.png" alt="PRO 1"></div>
+        <div class="card">
+          <div class="card-head"><div><h2>Certification Form</h2><span class="muted">Complete all required information before generating the document.</span></div><span class="badge" id="controlBadge">New record</span></div>
+          <form id="entryForm">
             <div class="form-grid">
-                <div class="form-group"><label>Date</label><input type="date" id="editDate" name="date" required></div>
-                <div class="form-group"><label>Rank</label><input type="text" id="editRank" name="rank" required></div>
-                <div class="form-group"><label>First Name</label><input type="text" id="editFirstName" name="firstName" required></div>
-                <div class="form-group"><label>Middle Name</label><input type="text" id="editMiddleName" name="middleName" required></div>
-                <div class="form-group"><label>Last Name</label><input type="text" id="editLastName" name="lastName" required></div>
-                <div class="form-group"><label>Qlf</label><input type="text" id="editQlf" name="qlf" required></div>
-                <div class="form-group">
-                    <label>Duty Status</label>
-                    <select id="editDutyStatus" name="dutyStatus" required>
-                        <option value="Active">Active</option><option value="Suspended">Suspended</option>
-                        <option value="Retired">Retired</option><option value="Resigned">Resigned</option>
-                        <option value="Deceased">Deceased</option>
-                    </select>
-                </div>
-                <div class="form-group"><label>Station</label><input type="text" id="editStation" name="station" required></div>
-                
-                <div class="form-group">
-                    <label>Unit/Office</label>
-                    <select id="editUnitOffice" name="unitOffice" required>
-                        <option value="PRO 1 RHQ">PRO 1 RHQ</option>
-                        <option value="Pangasinan PPO">Pangasinan PPO</option>
-                        <option value="La Union PPO">La Union PPO</option>
-                        <option value="Ilocos Sur PPO">Ilocos Sur PPO</option>
-                        <option value="Ilocos Norte PPO">Ilocos Norte PPO</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Commissionship</label>
-                    <select id="editCommissionship" name="commissionship" required>
-                        <option value="PCO">PCO</option><option value="PNCO">PNCO</option><option value="NUP">NUP</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Gender</label>
-                    <select id="editGender" name="gender" required>
-                        <option value="">Select...</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                    </select>
-                </div>
-                
-                <div class="form-group"><label>Cert. of Non-Money</label><select id="editSigNonMoney" name="sigNonMoney" required></select></div>
-                <div class="form-group"><label>Cert. of Non-Property</label><select id="editSigNonProperty" name="sigNonProperty" required></select></div>
-                <div class="form-group"><label>Noted by (Chief)</label><select id="editSigChief" name="sigChief" required></select></div>
-
-                <div class="form-group full-width"><label>Reason</label><textarea id="editReason" name="reason" rows="2" required></textarea></div>
+              <div class="field"><label>Date</label><input type="date" id="date" name="date" required></div>
+              <input type="hidden" id="formattedDate" name="formattedDate">
+              <div class="field"><label>Control No</label><input id="controlNo" name="controlNo" required placeholder="Auto-generated"></div>
+              <div class="field"><label>Rank</label><select id="rank" name="rank" required><option value="">Select Rank...</option><option>PBGEN</option><option>PCOL</option><option>PLTCOL</option><option>PMAJ</option><option>PCPT</option><option>PLT</option><option>PEMS</option><option>PCMS</option><option>PSMS</option><option>PMSg</option><option>PSSg</option><option>PCpl</option><option>Pat</option><option>NUP</option></select></div>
+              <div class="field"><label>First Name</label><input id="firstName" name="firstName" required></div>
+              <div class="field"><label>Middle Name</label><input id="middleName" name="middleName" required></div>
+              <div class="field"><label>Last Name</label><input id="lastName" name="lastName" required></div>
+              <div class="field"><label>Qlf</label><input id="qlf" name="qlf" required></div>
+              <div class="field"><label>Duty Status</label><select id="dutyStatus" name="dutyStatus" required><option value="">Select Status...</option><option>Active</option><option>Suspended</option><option>Retired</option><option>Resigned</option><option>Deceased</option></select></div>
+              <div class="field"><label>Station</label><input id="station" name="station" required></div>
+              <div class="field"><label>Unit/Office</label><select id="unitOffice" name="unitOffice" required><option value="">Select Unit/Office...</option><option>PRO 1 RHQ</option><option>Pangasinan PPO</option><option>La Union PPO</option><option>Ilocos Sur PPO</option><option>Ilocos Norte PPO</option></select></div>
+              <div class="field"><label>Commissionship</label><select id="commissionship" name="commissionship" required><option value="">Select...</option><option>PCO</option><option>PNCO</option><option>NUP</option></select></div>
+              <div class="field"><label>Gender</label><select id="gender" name="gender" required><option value="">Select...</option><option>Male</option><option>Female</option></select></div>
+              <div class="field"><label>Cert. of Non-Money</label><select id="sigNonMoney" name="sigNonMoney" required></select></div>
+              <div class="field"><label>Cert. of Non-Property</label><select id="sigNonProperty" name="sigNonProperty" required></select></div>
+              <div class="field"><label>Noted by (Chief)</label><select id="sigChief" name="sigChief" required></select></div>
+              <div class="field full"><label>Reason</label><textarea id="reason" name="reason" rows="3" required></textarea></div>
             </div>
-            <button type="submit" style="background-color: #10b981;">Save Changes & Download PDF</button>
-        </form>
+            <div class="actions"><button type="button" class="btn btn-secondary" id="previewBtn">Preview Document</button><button type="submit" class="btn btn-primary" id="submitBtn">Submit & Download PDF</button></div>
+          </form><div id="statusMessage" class="status"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><div><h2>Data Records</h2><span class="muted">Records retrieved directly from the Database sheet.</span></div><button class="btn btn-secondary small-btn" id="refreshRecordsBtn">Refresh Records</button></div>
+          <div class="table-wrap"><table class="table" id="recordsTable"><thead><tr><th>Date</th><th>Control No</th><th>Rank</th><th>Name</th><th>Duty Status</th><th>Unit/Office</th><th>Actions</th></tr></thead><tbody><tr><td colspan="7" class="loading">Loading...</td></tr></tbody></table></div>
+        </div>
+      </section>
+
+      <section id="pageProfile" class="page">
+        <div class="card">
+          <div class="profile-head"><div class="profile-avatar" id="profileAvatar">U</div><div><h2 id="profileName">User</h2><p id="profileMeta">User account</p></div></div>
+          <div class="settings-grid">
+            <div class="settings-tabs">
+              <button class="settings-tab active" data-tab="accountPanel">Account</button>
+              <button class="settings-tab" data-tab="securityPanel">Security</button>
+              <button class="settings-tab" data-tab="appearancePanel">Appearance</button>
+              <button class="settings-tab" data-tab="behaviorPanel">Preferences</button>
+            </div>
+            <div>
+              <div id="accountPanel" class="settings-panel active">
+                <div class="card-head"><div><h3>Account information</h3><span class="muted">Information associated with your current login.</span></div></div>
+                <div class="form-grid">
+                  <div class="field"><label>Username</label><input id="profileUsername" readonly></div>
+                  <div class="field"><label>Role</label><input id="profileRole" readonly></div>
+                  <div class="field"><label>Portal</label><input value="NMNP Portal" readonly></div>
+                </div>
+              </div>
+              <div id="securityPanel" class="settings-panel">
+                <div class="card-head"><div><h3>Password & session</h3><span class="muted">Change your password using the existing backend password action.</span></div></div>
+                <form id="passwordForm">
+                  <div class="form-grid">
+                    <div class="field"><label>Current Password</label><div class="input-wrap"><input id="oldPassword" type="password" required autocomplete="current-password"><button class="input-action" type="button" data-toggle-password="oldPassword">◉</button></div></div>
+                    <div class="field"><label>New Password</label><div class="input-wrap"><input id="newPassword" type="password" required minlength="4" autocomplete="new-password"><button class="input-action" type="button" data-toggle-password="newPassword">◉</button></div></div>
+                    <div class="field"><label>Confirm New Password</label><div class="input-wrap"><input id="confirmPassword" type="password" required minlength="4" autocomplete="new-password"><button class="input-action" type="button" data-toggle-password="confirmPassword">◉</button></div></div>
+                  </div>
+                  <div id="passwordHint" class="muted">Use a password you do not reuse elsewhere.</div>
+                  <div class="actions"><button class="btn btn-primary" type="submit">Update Password</button><button class="btn btn-secondary" type="button" id="logoutAllBtn">Log Out</button></div>
+                </form>
+              </div>
+              <div id="appearancePanel" class="settings-panel">
+                <div class="card-head"><div><h3>Appearance</h3><span class="muted">These visual preferences are stored on this browser.</span></div></div>
+                <div class="pref-row"><div><strong>Theme</strong><small>Choose light, dark or follow the device preference.</small></div><div class="theme-options"><button class="theme-option" data-theme-choice="light">Light</button><button class="theme-option" data-theme-choice="dark">Dark</button><button class="theme-option" data-theme-choice="system">System</button></div></div>
+                <div class="pref-row"><div><strong>Compact mode</strong><small>Reduce spacing in forms and data tables.</small></div><button class="switch" id="compactSwitch" type="button"></button></div>
+                <div class="pref-row"><div><strong>Sidebar collapsed</strong><small>Keep the navigation rail compact on wide screens.</small></div><button class="switch" id="sidebarSwitch" type="button"></button></div>
+                <div class="actions"><button class="btn btn-secondary" id="resetAppearanceBtn" type="button">Reset Appearance</button></div>
+              </div>
+              <div id="behaviorPanel" class="settings-panel">
+                <div class="card-head"><div><h3>Application preferences</h3><span class="muted">Local browser preferences that do not modify backend records.</span></div></div>
+                <div class="pref-row"><div><strong>Confirm before deleting</strong><small>Ask for confirmation before a record or signatory is deleted.</small></div><button class="switch" id="confirmDeleteSwitch" type="button"></button></div>
+                <div class="pref-row"><div><strong>Remember this session</strong><small>Keep the current login in this browser after closing the page.</small></div><button class="switch" id="rememberSessionSwitch" type="button"></button></div>
+                <div class="pref-row"><div><strong>Default page</strong><small>Page opened after signing in.</small></div><select id="defaultPageSelect" style="max-width:190px;padding:9px 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text)"><option value="pageHome">Homepage</option><option value="pageProfile">Profile Settings</option></select></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="pageSettings" class="page alpha-only">
+        <div class="card">
+          <div class="card-head"><div><h2>User Management</h2><span class="muted">Manage roles and PIN values through the existing backend action.</span></div></div>
+          <div class="table-wrap"><table class="table" id="usersTable"><thead><tr><th>Username</th><th>Role</th><th>PIN</th><th>Action</th></tr></thead><tbody></tbody></table></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div><h2>Signatories</h2><span class="muted">Maintain signatories used by document generation.</span></div></div>
+          <form id="signatoryForm" data-editing="false" data-old-name="">
+            <div class="form-grid">
+              <div class="field"><label>Category</label><select id="sigCat" required><option>Non-Money</option><option>Non-Property</option><option>Chief</option></select></div>
+              <div class="field"><label>Rank</label><input id="sigRank" required></div>
+              <div class="field"><label>Name</label><input id="sigName" required></div>
+              <div class="field"><label>Designation</label><input id="sigDesig" required></div>
+            </div>
+            <div class="actions"><button class="btn btn-primary" type="submit" id="sigSubmitBtn">Add Signatory</button><button class="btn btn-secondary" type="button" id="sigCancelBtn" style="display:none">Cancel Edit</button></div>
+          </form>
+          <div class="table-wrap" style="margin-top:18px"><table class="table" id="signatoriesTable"><thead><tr><th>Category</th><th>Rank</th><th>Name</th><th>Designation</th><th>Action</th></tr></thead><tbody></tbody></table></div>
+        </div>
+      </section>
     </div>
+  </main>
 </div>
 
-<!-- Custom PIN Modal -->
-<div id="pinModal" class="modal">
-    <div class="modal-content modal-small">
-        <h3 id="pinMessage">Admin / Alpha-Admin Approval Required.</h3>
-        <div class="form-group"><label>Enter PIN:</label><input type="password" id="pinInput" maxlength="6"></div>
-        <div class="button-group">
-            <button type="button" class="btn-secondary" id="pinCancelBtn">Cancel</button>
-            <button type="button" id="pinConfirmBtn">Confirm</button>
-        </div>
-    </div>
-</div>
-
-<!-- Preview Document Modal via iframe -->
-<div id="previewModal" class="modal">
-    <div class="modal-content" style="width: 90%; height: 85vh; display: flex; flex-direction: column;">
-        <span class="close-btn" onclick="closeModal('previewModal')">&times;</span>
-        <h2>Document Preview</h2>
-        <div id="previewLoading" style="text-align: center; padding: 20px; font-weight: 500; display: none;">Generating template preview...</div>
-        <iframe id="previewFrame" style="flex-grow: 1; width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; display: none;"></iframe>
-        <div class="button-group">
-            <button type="button" class="btn-secondary" onclick="closeModal('previewModal')">Close Preview</button>
-        </div>
-    </div>
-</div>
+<!-- Modals -->
+<div id="alertModal" class="modal"><div class="modal-box modal-small"><div class="modal-head"><h2>Notification</h2><button class="close" data-close="alertModal">×</button></div><p id="alertMessage" class="muted" style="font-size:13px;line-height:1.6"></p><div class="actions"><button class="btn btn-primary" data-close="alertModal">OK</button></div></div></div>
+<div id="pinModal" class="modal"><div class="modal-box modal-small"><div class="modal-head"><h2>Approval required</h2><button class="close" data-close="pinModal">×</button></div><p id="pinMessage" class="muted">Enter Admin / Alpha-Admin PIN.</p><div class="field"><label>PIN</label><input id="pinInput" type="password" maxlength="6" inputmode="numeric"></div><div class="actions"><button class="btn btn-secondary" id="pinCancelBtn">Cancel</button><button class="btn btn-primary" id="pinConfirmBtn">Confirm</button></div></div></div>
+<div id="editModal" class="modal"><div class="modal-box"><div class="modal-head"><h2>Edit Record</h2><button class="close" data-close="editModal">×</button></div>
+<form id="editForm"><input type="hidden" id="editControlNo" name="controlNo"><div class="form-grid">
+<div class="field"><label>Date</label><input type="date" id="editDate" name="date" required></div><div class="field"><label>Rank</label><input id="editRank" name="rank" required></div><div class="field"><label>First Name</label><input id="editFirstName" name="firstName" required></div><div class="field"><label>Middle Name</label><input id="editMiddleName" name="middleName" required></div><div class="field"><label>Last Name</label><input id="editLastName" name="lastName" required></div><div class="field"><label>Qlf</label><input id="editQlf" name="qlf" required></div>
+<div class="field"><label>Duty Status</label><select id="editDutyStatus" name="dutyStatus" required><option>Active</option><option>Suspended</option><option>Retired</option><option>Resigned</option><option>Deceased</option></select></div><div class="field"><label>Station</label><input id="editStation" name="station" required></div><div class="field"><label>Unit/Office</label><select id="editUnitOffice" name="unitOffice" required><option>PRO 1 RHQ</option><option>Pangasinan PPO</option><option>La Union PPO</option><option>Ilocos Sur PPO</option><option>Ilocos Norte PPO</option></select></div><div class="field"><label>Commissionship</label><select id="editCommissionship" name="commissionship" required><option>PCO</option><option>PNCO</option><option>NUP</option></select></div><div class="field"><label>Gender</label><select id="editGender" name="gender" required><option value="">Select...</option><option>Male</option><option>Female</option></select></div>
+<div class="field"><label>Cert. of Non-Money</label><select id="editSigNonMoney" name="sigNonMoney" required></select></div><div class="field"><label>Cert. of Non-Property</label><select id="editSigNonProperty" name="sigNonProperty" required></select></div><div class="field"><label>Noted by (Chief)</label><select id="editSigChief" name="sigChief" required></select></div><div class="field full"><label>Reason</label><textarea id="editReason" name="reason" rows="3" required></textarea></div>
+</div><div class="actions"><button class="btn btn-success" type="submit">Save Changes & Download PDF</button></div></form></div></div>
+<div id="previewModal" class="modal"><div class="modal-box" style="width:min(1200px,100%);height:90vh;display:flex;flex-direction:column"><div class="modal-head"><h2>Document Preview</h2><button class="close" data-close="previewModal">×</button></div><div id="previewLoading" class="loading">Generating template preview...</div><iframe id="previewFrame" style="display:none;flex:1;width:100%;border:1px solid var(--border);border-radius:10px"></iframe></div></div>
 
 <script>
-    // MAKE SURE TO REPLACE WITH YOUR UPDATED DEPLOYMENT URL
-    const webAppUrl = 'https://script.google.com/macros/s/AKfycbyaOLAFrOL4-PRgkDK7_vM8gHUNzzbqRKULu8NuecC4KsRLaMfcSGPbiBN56GZwu60J5Q/exec';
-    
-    let currentUser = '';
-    let currentRole = '';
+const webAppUrl='https://script.google.com/macros/s/AKfycbyaOLAFrOL4-PRgkDK7_vM8gHUNzzbqRKULu8NuecC4KsRLaMfcSGPbiBN56GZwu60J5Q/exec';
+let currentUser='',currentRole='';
 
-    // Custom Alert Function
-    function showCustomAlert(message) {
-        document.getElementById('alertMessage').innerText = message;
-        document.getElementById('alertModal').style.display = 'flex';
-    }
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function initials(name){return String(name||'U').trim().split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase()||'U'}
+function formatToTextDate(dateStr){if(!dateStr)return '';const d=new Date(dateStr);if(isNaN(d))return String(dateStr);return d.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'2-digit'})}
+function triggerDownload(url){if(!url)return;const a=document.createElement('a');a.href=url;a.target='_blank';document.body.appendChild(a);a.click();a.remove()}
+function showCustomAlert(message){$('alertMessage').innerText=message||'An unexpected response was received.';openModal('alertModal')}
+function openModal(id){$(id)?.classList.add('open')}
+function closeModal(id){$(id)?.classList.remove('open')}
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close)));
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id)}));
 
-    function formatToTextDate(dateStr) {
-        if(!dateStr) return '';
-        const options = { year: 'numeric', month: 'long', day: '2-digit' };
-        return new Date(dateStr).toLocaleDateString('en-US', options);
-    }
+function toggleAuth(view){$('loginSection').style.display=view==='login'?'grid':'none';$('registerSection').style.display=view==='register'?'grid':'none'}
+function processForm(e,action,params,successCallback){
+  e?.preventDefault();
+  const btn=e?.target?.querySelector?.('button[type="submit"]');
+  const original=btn?.innerText;
+  if(btn){btn.innerText='Processing…';btn.disabled=true}
+  params.append('action',action);
+  return fetch(webAppUrl,{method:'POST',body:params}).then(r=>r.json()).then(data=>{
+    if(data.result==='success'){successCallback?.(data);return data}
+    showCustomAlert('Error: '+(data.message||'Request failed.'));throw new Error(data.message||'Request failed')
+  }).catch(err=>{if(err?.name==='TypeError'){showCustomAlert('Network error. Please check the connection and try again.')}throw err})
+  .finally(()=>{if(btn){btn.innerText=original;btn.disabled=false}})
+}
 
-    function triggerDownload(url) {
-        if (!url) return;
-        const a = document.createElement('a');
-        a.href = url;
-        a.target = '_blank'; 
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    }
+document.querySelectorAll('[data-toggle-password]').forEach(b=>b.addEventListener('click',()=>{const i=$(b.dataset.togglePassword);i.type=i.type==='password'?'text':'password'}));
 
-    function requestPin(message) {
-        return new Promise((resolve) => {
-            const modal = document.getElementById('pinModal');
-            document.getElementById('pinMessage').innerText = message || "Enter PIN:";
-            document.getElementById('pinInput').value = '';
-            modal.style.display = 'flex';
-            
-            document.getElementById('pinConfirmBtn').onclick = () => {
-                modal.style.display = 'none';
-                resolve(document.getElementById('pinInput').value);
-            };
-            document.getElementById('pinCancelBtn').onclick = () => {
-                modal.style.display = 'none';
-                resolve(null);
-            };
-        });
-    }
+function applyTheme(theme){
+  const actual=theme==='system'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):theme;
+  document.documentElement.dataset.theme=actual;
+  localStorage.setItem('profileTheme',theme);
+  document.querySelectorAll('[data-theme-choice]').forEach(b=>b.classList.toggle('active',b.dataset.themeChoice===theme));
+}
+function setSwitch(id,on){const el=$(id);if(!el)return;el.classList.toggle('on',!!on);el.setAttribute('aria-checked',!!on)}
+function getBool(key,defaultValue){const v=localStorage.getItem(key);return v===null?defaultValue:v==='true'}
+function savePreference(key,value){localStorage.setItem(key,String(value))}
+function loadPreferences(){
+  applyTheme(localStorage.getItem('profileTheme')||'light');
+  const compact=getBool('profileCompact',false), collapsed=getBool('profileSidebarCollapsed',false);
+  document.body.classList.toggle('compact',compact);setSwitch('compactSwitch',compact);
+  $('sidebar').classList.toggle('collapsed',collapsed);setSwitch('sidebarSwitch',collapsed);
+  setSwitch('confirmDeleteSwitch',getBool('profileConfirmDelete',true));
+  setSwitch('rememberSessionSwitch',getBool('profileRememberSession',true));
+  $('defaultPageSelect').value=localStorage.getItem('profileDefaultPage')||'pageHome';
+}
+function setupPreferences(){
+  document.querySelectorAll('[data-theme-choice]').forEach(b=>b.addEventListener('click',()=>applyTheme(b.dataset.themeChoice)));
+  $('compactSwitch').addEventListener('click',()=>{const on=!getBool('profileCompact',false);savePreference('profileCompact',on);document.body.classList.toggle('compact',on);setSwitch('compactSwitch',on)});
+  $('sidebarSwitch').addEventListener('click',()=>{const on=!getBool('profileSidebarCollapsed',false);savePreference('profileSidebarCollapsed',on);$('sidebar').classList.toggle('collapsed',on);setSwitch('sidebarSwitch',on)});
+  $('confirmDeleteSwitch').addEventListener('click',()=>{const on=!getBool('profileConfirmDelete',true);savePreference('profileConfirmDelete',on);setSwitch('confirmDeleteSwitch',on)});
+  $('rememberSessionSwitch').addEventListener('click',()=>{const on=!getBool('profileRememberSession',true);savePreference('profileRememberSession',on);setSwitch('rememberSessionSwitch',on)});
+  $('defaultPageSelect').addEventListener('change',()=>savePreference('profileDefaultPage',$('defaultPageSelect').value));
+  $('resetAppearanceBtn').addEventListener('click',()=>{localStorage.removeItem('profileTheme');localStorage.removeItem('profileCompact');localStorage.removeItem('profileSidebarCollapsed');applyTheme('light');document.body.classList.remove('compact');$('sidebar').classList.remove('collapsed');setSwitch('compactSwitch',false);setSwitch('sidebarSwitch',false)});
+}
 
-    function toggleAuth(view) {
-        document.getElementById('loginSection').style.display = view === 'login' ? 'flex' : 'none';
-        document.getElementById('registerSection').style.display = view === 'register' ? 'flex' : 'none';
-    }
+function updateProfileUI(){
+  const ini=initials(currentUser);$('sideAvatar').innerText=ini;$('profileAvatar').innerText=ini;
+  $('sideUser').innerText=currentUser;$('sideRole').innerText=currentRole;
+  $('profileName').innerText=currentUser;$('profileMeta').innerText=`${currentRole} • NMNP Portal`;
+  $('profileUsername').value=currentUser;$('profileRole').value=currentRole;
+  $('userRoleBadge')?.remove();
+}
+function showMainApp(){
+  $('loginSection').style.display='none';$('registerSection').style.display='none';$('mainApp').style.display='flex';
+  $('settingsNav').style.display=currentRole==='Alpha-Admin'?'flex':'none';
+  $('pageSettings').classList.toggle('alpha-only',currentRole!=='Alpha-Admin');
+  updateProfileUI();loadPreferences();loadSignatories();
+  const defaultPage=currentRole==='Alpha-Admin'&&localStorage.getItem('profileDefaultPage')==='pageSettings'?'pageHome':(localStorage.getItem('profileDefaultPage')||'pageHome');
+  switchPage(defaultPage,document.querySelector(`[data-page="${defaultPage}"]`));
+}
+function checkLoginStatus(){
+  const storedUser=localStorage.getItem('currentUser'),storedRole=localStorage.getItem('currentRole');
+  if(storedUser&&storedRole){currentUser=storedUser;currentRole=storedRole;showMainApp()}else toggleAuth('login')
+}
+function logout(){
+  localStorage.removeItem('currentUser');localStorage.removeItem('currentRole');currentUser='';currentRole='';
+  $('mainApp').style.display='none';toggleAuth('login');$('loginForm').reset();
+}
+$('logoutBtn').addEventListener('click',logout);$('logoutAllBtn').addEventListener('click',logout);
 
-    function showMainApp() {
-        document.getElementById('userRoleBadge').innerText = `${currentUser} (${currentRole})`;
-        document.getElementById('loginSection').style.display = 'none';
-        document.getElementById('mainApp').style.display = 'flex';
-        
-        if (currentRole === 'Alpha-Admin') {
-            document.getElementById('pageSettings').innerHTML = settingsHTML; 
-            document.querySelectorAll('.alpha-only').forEach(el => el.style.display = 'block');
-            document.getElementById('settingsNav').style.display = 'flex';
-            attachSignatoryListener();
-        } else {
-            document.getElementById('settingsNav').style.display = 'none';
-        }
-        
-        document.getElementById('date').value = new Date().toISOString().split('T')[0];
-        switchPage('pageHome', document.querySelector('.nav-item.active') || document.querySelector('.nav-item'));
-    }
+const pageInfo={pageHome:['Homepage','Certification records and document generation'],pageProfile:['Profile Settings','Account, security and interface preferences'],pageSettings:['System Settings','Users and signatories administration']};
+function switchPage(pageId,navItem){
+  if(pageId==='pageSettings'&&currentRole!=='Alpha-Admin')return;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));$(pageId)?.classList.add('active');
+  document.querySelectorAll('.nav-item[data-page]').forEach(n=>n.classList.remove('active'));navItem?.classList.add('active');
+  $('topTitle').innerText=pageInfo[pageId]?.[0]||'RHSU';$('topSubtitle').innerText=pageInfo[pageId]?.[1]||'';
+  $('sidebar').classList.remove('open');
+  if(pageId==='pageHome'){loadData();loadSignatories()}
+  if(pageId==='pageSettings'){loadUsersList();loadSignatoriesTable()}
+}
+document.querySelectorAll('.nav-item[data-page]').forEach(n=>n.addEventListener('click',()=>switchPage(n.dataset.page,n)));
+$('mobileToggle').addEventListener('click',()=>$('sidebar').classList.toggle('open'));
+$('collapseToggle').addEventListener('click',()=>{const on=!$('sidebar').classList.contains('collapsed');$('sidebar').classList.toggle('collapsed',on);savePreference('profileSidebarCollapsed',on);setSwitch('sidebarSwitch',on)});
+$('refreshBtn').addEventListener('click',()=>{const active=document.querySelector('.page.active')?.id;if(active==='pageHome')loadData();if(active==='pageSettings'){loadUsersList();loadSignatoriesTable();loadSignatories()}});
+$('refreshRecordsBtn').addEventListener('click',loadData);
+$('themeQuickBtn').addEventListener('click',()=>applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'));
 
-    function checkLoginStatus() {
-        const storedUser = localStorage.getItem('currentUser');
-        const storedRole = localStorage.getItem('currentRole');
-        
-        if (storedUser && storedRole) {
-            currentUser = storedUser;
-            currentRole = storedRole;
-            showMainApp();
-        } else {
-            document.getElementById('loginSection').style.display = 'flex';
-        }
-    }
+$('loginForm').addEventListener('submit',e=>{
+  const params=new URLSearchParams(new FormData(e.target));
+  processForm(e,'login',params,data=>{
+    const remember=getBool('profileRememberSession',true);
+    if(remember){localStorage.setItem('currentUser',data.username);localStorage.setItem('currentRole',data.role)}
+    currentUser=data.username;currentRole=data.role;showMainApp();e.target.reset();
+  }).catch(()=>{});
+});
+$('registerForm').addEventListener('submit',e=>{
+  const params=new URLSearchParams(new FormData(e.target));
+  processForm(e,'register',params,()=>{showCustomAlert('Account created successfully. You can now sign in.');e.target.reset();toggleAuth('login')}).catch(()=>{});
+});
+$('passwordForm').addEventListener('submit',e=>{
+  e.preventDefault();const n=$('newPassword').value,c=$('confirmPassword').value;
+  if(n!==c){showCustomAlert('New password and confirmation do not match.');return}
+  const params=new URLSearchParams({username:currentUser,oldPassword:$('oldPassword').value,newPassword:n});
+  processForm(e,'updatePassword',params,()=>{showCustomAlert('Password updated successfully.');e.target.reset()}).catch(()=>{});
+});
 
-    function logout() {
-        localStorage.removeItem('currentUser');
-        localStorage.removeItem('currentRole');
-        
-        document.getElementById('mainApp').style.display = 'none';
-        document.getElementById('loginSection').style.display = 'flex';
-        currentUser = ''; currentRole = 'User';
-        document.querySelectorAll('.alpha-only').forEach(el => el.style.display = 'none');
-        document.getElementById('pageSettings').innerHTML = ''; 
-    }
+function requestPin(message){
+  return new Promise(resolve=>{
+    $('pinMessage').innerText=message||'Enter PIN:';$('pinInput').value='';openModal('pinModal');$('pinInput').focus();
+    const finish=v=>{closeModal('pinModal');$('pinConfirmBtn').onclick=null;$('pinCancelBtn').onclick=null;resolve(v)};
+    $('pinConfirmBtn').onclick=()=>finish($('pinInput').value);$('pinCancelBtn').onclick=()=>finish(null);
+  })
+}
+function openPreview(){
+  const form=$('entryForm');if(!form.checkValidity()){form.reportValidity();return}
+  $('formattedDate').value=formatToTextDate($('date').value);openModal('previewModal');$('previewLoading').style.display='block';$('previewFrame').style.display='none';$('previewFrame').src='';
+  fetch(webAppUrl,{method:'POST',body:new URLSearchParams(new FormData(form))}).then(r=>r.json()).then(data=>{
+    if(data.result==='success'){$('previewLoading').style.display='none';$('previewFrame').style.display='block';$('previewFrame').src=data.pdfUrl}
+    else $('previewLoading').innerText='Error: '+data.message;
+  }).catch(()=>{$('previewLoading').innerText='Network error during preview generation.'});
+}
+$('previewBtn').addEventListener('click',openPreview);
 
-    function switchPage(pageId, navItem) {
-        document.querySelectorAll('.page-section').forEach(p => p.style.display = 'none');
-        document.getElementById(pageId).style.display = 'block';
-        
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        if(navItem) navItem.classList.add('active');
-
-        if(pageId === 'pageHome') {
-            loadData(); loadSignatories();
-        } else if (pageId === 'pageSettings' && currentRole === 'Alpha-Admin') {
-            loadUsersList(); loadSignatoriesTable();
-        }
-    }
-
-    let settingsHTML = document.getElementById('pageSettings').innerHTML;
-    document.getElementById('pageSettings').innerHTML = '';
-
-    function processForm(e, action, params, successCallback) {
-        e.preventDefault();
-        const btn = e.target.querySelector('button[type="submit"]');
-        const originalText = btn.innerText;
-        btn.innerText = 'Processing...'; btn.disabled = true;
-        params.append('action', action);
-
-        fetch(webAppUrl, { method: 'POST', body: params })
-            .then(res => res.json())
-            .then(data => {
-                if(data.result === 'success') successCallback(data);
-                else showCustomAlert('Error: ' + data.message);
-            })
-            .catch(err => showCustomAlert('Network error.'))
-            .finally(() => { btn.innerText = originalText; btn.disabled = false; });
-    }
-
-    document.getElementById('loginForm').addEventListener('submit', (e) => {
-        const params = new URLSearchParams(new FormData(e.target));
-        processForm(e, 'login', params, (data) => {
-            e.target.reset();
-            localStorage.setItem('currentUser', data.username);
-            localStorage.setItem('currentRole', data.role);
-            
-            currentUser = data.username;
-            currentRole = data.role;
-            
-            showMainApp();
-        });
+function loadData(){
+  const tbody=document.querySelector('#recordsTable tbody');tbody.innerHTML='<tr><td colspan="7" class="loading">Loading records…</td></tr>';
+  fetch(webAppUrl).then(r=>r.json()).then(data=>{
+    $('controlNo').value=data.nextControlNo||'';tbody.innerHTML='';
+    if(!data.records?.length){tbody.innerHTML='<tr><td colspan="7" class="loading">No records found.</td></tr>';return}
+    data.records.forEach(row=>{
+      const tr=document.createElement('tr');const name=`${row[5]||''}, ${row[3]||''} ${row[4]||''}`.trim();
+      tr.innerHTML=`<td>${esc(row[0])}</td><td><b>${esc(row[1])}</b></td><td>${esc(row[2])}</td><td>${esc(name)}</td><td><span class="badge ${row[7]==='Active'?'success':'warning'}">${esc(row[7])}</span></td><td>${esc(row[9])}</td><td><div class="table-actions"><button class="btn btn-warning small-btn edit-record">Edit</button><button class="btn btn-danger small-btn delete-record">Delete</button></div></td>`;
+      tr.querySelector('.edit-record').addEventListener('click',()=>openEditModal(row));tr.querySelector('.delete-record').addEventListener('click',()=>deleteRecord(row[1]));tbody.appendChild(tr)
     });
+  }).catch(()=>{tbody.innerHTML='<tr><td colspan="7" class="loading">Unable to load records. Check the backend connection.</td></tr>'});
+}
+function openEditModal(row){
+  const ids=['editDate','editControlNo','editRank','editFirstName','editMiddleName','editLastName','editQlf','editDutyStatus','editStation','editUnitOffice','editCommissionship','editGender','editReason'];
+  ids.forEach((id,i)=>$(id).value=row[i]||'');
+  const parsed=new Date(row[0]); if(!isNaN(parsed)) $('editDate').value=parsed.toISOString().slice(0,10);
+  loadSignatories(()=>{['editSigNonMoney','editSigNonProperty','editSigChief'].forEach((id,i)=>$(id).value=row[13+i]||'')});
+  openModal('editModal');
+}
+$('editForm').addEventListener('submit',async e=>{
+  e.preventDefault();const pin=await requestPin('Admin / Alpha-Admin Approval Required.');if(!pin)return;
+  const params=new URLSearchParams(new FormData(e.target));params.append('adminPin',pin);
+  processForm(e,'update',params,data=>{showCustomAlert('Record updated successfully.');closeModal('editModal');loadData();if(data.pdfUrl)triggerDownload(data.pdfUrl)}).catch(()=>{});
+});
+async function deleteRecord(controlNo){
+  if(getBool('profileConfirmDelete',true)&&!confirm(`Delete record ${controlNo}?`))return;
+  const pin=await requestPin('Admin / Alpha-Admin Approval Required to Delete.');if(!pin)return;
+  fetch(webAppUrl,{method:'POST',body:new URLSearchParams({action:'delete',controlNo,adminPin:pin})}).then(r=>r.json()).then(data=>{
+    if(data.result==='success'){showCustomAlert('Record deleted.');loadData()}else showCustomAlert('Action denied: '+data.message)
+  }).catch(()=>showCustomAlert('Network error.'));
+}
+$('entryForm').addEventListener('submit',e=>{
+  $('formattedDate').value=formatToTextDate($('date').value);
+  const params=new URLSearchParams(new FormData(e.target));
+  processForm(e,'create',params,data=>{ $('statusMessage').innerText='Success! Document generated.';$('statusMessage').style.color='var(--success)';if(data.pdfUrl)triggerDownload(data.pdfUrl);e.target.reset();$('date').value=new Date().toISOString().split('T')[0];loadData()}).catch(()=>{});
+});
 
-    document.getElementById('registerForm').addEventListener('submit', (e) => {
-        const params = new URLSearchParams(new FormData(e.target));
-        processForm(e, 'register', params, () => {
-            showCustomAlert('Account created! You can now log in.');
-            e.target.reset(); toggleAuth('login');
-        });
-    });
+function loadUsersList(){
+  if(currentRole!=='Alpha-Admin')return;const tbody=document.querySelector('#usersTable tbody');tbody.innerHTML='<tr><td colspan="4" class="loading">Loading users…</td></tr>';
+  fetch(webAppUrl,{method:'POST',body:new URLSearchParams({action:'getUsers'})}).then(r=>r.json()).then(data=>{
+    tbody.innerHTML='';(data.users||[]).forEach((u,index)=>{
+      const tr=document.createElement('tr');tr.innerHTML=`<td><b>${esc(u.username)}</b></td><td><select class="role-select" style="padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text)"><option>User</option><option>Admin</option><option>Alpha-Admin</option></select></td><td><input class="pin-input" maxlength="6" value="${esc(u.pin)}" style="width:85px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text)"></td><td><button class="btn btn-primary small-btn">Save</button></td>`;
+      tr.querySelector('.role-select').value=u.role;tr.querySelector('button').addEventListener('click',()=>saveUser(u.username,tr));tbody.appendChild(tr)
+    })
+  }).catch(()=>tbody.innerHTML='<tr><td colspan="4" class="loading">Unable to load users.</td></tr>')
+}
+function saveUser(username,tr){
+  const params={action:'updateUserRole',targetUser:username,newRole:tr.querySelector('.role-select').value,newPin:tr.querySelector('.pin-input').value};
+  fetch(webAppUrl,{method:'POST',body:new URLSearchParams(params)}).then(r=>r.json()).then(data=>{showCustomAlert(data.result==='success'?'User updated successfully.':('Error: '+data.message));if(data.result==='success')loadUsersList()}).catch(()=>showCustomAlert('Network error.'));
+}
 
-    document.getElementById('passwordForm').addEventListener('submit', (e) => {
-        const params = new URLSearchParams();
-        params.append('username', currentUser);
-        params.append('oldPassword', document.getElementById('oldPassword').value);
-        params.append('newPassword', document.getElementById('newPassword').value);
-        processForm(e, 'updatePassword', params, () => {
-            showCustomAlert('Password updated successfully.');
-            e.target.reset();
-        });
-    });
+let signatoryCache=[];
+function loadSignatories(done){
+  fetch(webAppUrl,{method:'POST',body:new URLSearchParams({action:'getSignatories'})}).then(r=>r.json()).then(data=>{
+    signatoryCache=data.signatories||[];fillSignatorySelects();done?.()
+  }).catch(()=>done?.());
+}
+function fillSignatorySelects(){
+  const map={'Non-Money':['sigNonMoney','editSigNonMoney'],'Non-Property':['sigNonProperty','editSigNonProperty'],Chief:['sigChief','editSigChief']};
+  Object.entries(map).forEach(([cat,ids])=>ids.forEach(id=>{const s=$(id);if(!s)return;s.innerHTML='<option value="">Select...</option>';signatoryCache.filter(x=>x[0]===cat).forEach(x=>{const opt=document.createElement('option');opt.value=`${x[1]} ${x[2]}`;opt.textContent=`${x[1]} ${x[2]} (${x[3]})`;s.appendChild(opt)})}))
+}
+function loadSignatoriesTable(){
+  const tbody=document.querySelector('#signatoriesTable tbody');if(!tbody)return;tbody.innerHTML='<tr><td colspan="5" class="loading">Loading signatories…</td></tr>';
+  fetch(webAppUrl,{method:'POST',body:new URLSearchParams({action:'getSignatories'})}).then(r=>r.json()).then(data=>{
+    signatoryCache=data.signatories||[];fillSignatorySelects();tbody.innerHTML='';
+    signatoryCache.forEach(s=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${esc(s[0])}</td><td>${esc(s[1])}</td><td><b>${esc(s[2])}</b></td><td>${esc(s[3])}</td><td><div class="table-actions"><button class="btn btn-warning small-btn edit-sig">Edit</button><button class="btn btn-danger small-btn delete-sig">Delete</button></div></td>`;tr.querySelector('.edit-sig').addEventListener('click',()=>editSig(...s));tr.querySelector('.delete-sig').addEventListener('click',()=>delSig(s[0],s[2]));tbody.appendChild(tr)})
+  }).catch(()=>tbody.innerHTML='<tr><td colspan="5" class="loading">Unable to load signatories.</td></tr>')
+}
+$('signatoryForm').addEventListener('submit',e=>{
+  e.preventDefault();const f=$('signatoryForm'),editing=f.dataset.editing==='true',action=editing?'editSignatory':'addSignatory';
+  const params=new URLSearchParams({category:$('sigCat').value,rank:$('sigRank').value,name:$('sigName').value,designation:$('sigDesig').value,oldName:f.dataset.oldName||''});
+  processForm(e,action,params,()=>{resetSigForm();loadSignatoriesTable();loadSignatories()}).catch(()=>{});
+});
+function editSig(category,rank,name,designation){$('sigCat').value=category;$('sigRank').value=rank;$('sigName').value=name;$('sigDesig').value=designation;$('signatoryForm').dataset.editing='true';$('signatoryForm').dataset.oldName=name;$('sigSubmitBtn').innerText='Update Signatory';$('sigCancelBtn').style.display='inline-flex'}
+function resetSigForm(){const f=$('signatoryForm');f.reset();f.dataset.editing='false';f.dataset.oldName='';$('sigSubmitBtn').innerText='Add Signatory';$('sigCancelBtn').style.display='none'}
+$('sigCancelBtn').addEventListener('click',resetSigForm);
+function delSig(category,name){
+  if(getBool('profileConfirmDelete',true)&&!confirm(`Delete signatory ${name}?`))return;
+  fetch(webAppUrl,{method:'POST',body:new URLSearchParams({action:'deleteSignatory',category,name})}).then(r=>r.json()).then(data=>{if(data.result==='success'){showCustomAlert('Signatory deleted.');loadSignatoriesTable();loadSignatories()}else showCustomAlert('Error: '+data.message)}).catch(()=>showCustomAlert('Network error.'));
+}
 
-    function openPreview() {
-        const form = document.getElementById('entryForm');
-        
-        if(!form.checkValidity()) {
-            form.reportValidity();
-            return;
-        }
-
-        const previewModal = document.getElementById('previewModal');
-        const previewLoading = document.getElementById('previewLoading');
-        const previewFrame = document.getElementById('previewFrame');
-        
-        document.getElementById('formattedDate').value = formatToTextDate(document.getElementById('date').value);
-
-        previewModal.style.display = 'flex';
-        previewLoading.style.display = 'block';
-        previewFrame.style.display = 'none';
-        previewFrame.src = ""; 
-
-        const params = new URLSearchParams(new FormData(form));
-        params.append('action', 'preview');
-
-        fetch(webAppUrl, { method: 'POST', body: params })
-            .then(res => res.json())
-            .then(data => {
-                if(data.result === 'success') {
-                    previewLoading.style.display = 'none';
-                    previewFrame.style.display = 'block';
-                    previewFrame.src = data.pdfUrl;
-                } else {
-                    previewLoading.innerText = 'Error: ' + data.message;
-                }
-            })
-            .catch(err => {
-                previewLoading.innerText = 'Network error during preview generation.';
-            });
-    }
-
-    function loadData() {
-        fetch(webAppUrl).then(res => res.json()).then(data => {
-            document.getElementById('controlNo').value = data.nextControlNo;
-            const tbody = document.querySelector('#recordsTable tbody');
-            tbody.innerHTML = '';
-            data.records.forEach(row => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${formatToTextDate(row[0])}</td><td>${row[1]}</td><td>${row[2]}</td>
-                    <td>${row[5]}, ${row[3]} ${row[4]}</td><td>${row[7]}</td><td>${row[9]}</td>
-                    <td class="action-btns">
-                        <button class="btn-small btn-edit" onclick='openEditModal(${JSON.stringify(row)})'>Edit</button>
-                        <button class="btn-small btn-delete" onclick="deleteRecord('${row[1]}')">Delete</button>
-                    </td>`;
-                tbody.appendChild(tr);
-            });
-        });
-    }
-
-    function openEditModal(row) {
-        document.getElementById('editModal').style.display = 'flex';
-        const fields = ['editDate', 'editControlNo', 'editRank', 'editFirstName', 'editMiddleName', 'editLastName', 'editQlf', 'editDutyStatus', 'editStation', 'editUnitOffice', 'editCommissionship', 'editGender', 'editReason'];
-        fields.forEach((id, i) => {
-            if(document.getElementById(id)) {
-                document.getElementById(id).value = row[i] || '';
-            }
-        });
-    }
-
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-    document.getElementById('editForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const pin = await requestPin("Admin / Alpha-Admin Approval Required.");
-        if (!pin) return;
-        
-        const params = new URLSearchParams(new FormData(this));
-        params.append('adminPin', pin);
-        
-        processForm(e, 'update', params, (data) => {
-            showCustomAlert('Record updated successfully.');
-            closeModal('editModal');
-            loadData();
-            
-            if (data.pdfUrl) {
-                triggerDownload(data.pdfUrl);
-            }
-        });
-    });
-
-    async function deleteRecord(controlNo) {
-        const pin = await requestPin("Admin / Alpha-Admin Approval Required to Delete.");
-        if (!pin) return;
-        
-        fetch(webAppUrl, { method: 'POST', body: new URLSearchParams({action: 'delete', controlNo: controlNo, adminPin: pin}) })
-            .then(res => res.json())
-            .then(data => {
-                if(data.result === 'success') { showCustomAlert('Deleted.'); loadData(); }
-                else showCustomAlert('Action denied: ' + data.message);
-            });
-    }
-
-    document.getElementById('entryForm').addEventListener('submit', function(e) {        
-        document.getElementById('formattedDate').value = formatToTextDate(document.getElementById('date').value);
-        
-        const params = new URLSearchParams(new FormData(this));
-        processForm(e, 'create', params, (data) => {
-            document.getElementById('statusMessage').innerText = 'Success! Document generated.';
-            document.getElementById('statusMessage').style.color = '#10b981';
-            
-            if (data.pdfUrl) {
-                triggerDownload(data.pdfUrl);
-            }
-            
-            this.reset();
-            document.getElementById('date').value = new Date().toISOString().split('T')[0];
-            loadData();
-        });
-    });
-
-    function loadUsersList() {
-        if(!document.getElementById('usersTable')) return;
-        fetch(webAppUrl, { method: 'POST', body: new URLSearchParams({action: 'getUsers'}) })
-            .then(res => res.json()).then(data => {
-                const tbody = document.querySelector('#usersTable tbody');
-                tbody.innerHTML = '';
-                data.users.forEach(u => {
-                    const safeId = u.username.replace(/\s+/g, '_');
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${u.username}</td>
-                            <td>
-                                <select id="role_${safeId}" style="padding: 6px; font-size: 13px;">
-                                    <option value="User" ${u.role==='User'?'selected':''}>User</option>
-                                    <option value="Admin" ${u.role==='Admin'?'selected':''}>Admin</option>
-                                    <option value="Alpha-Admin" ${u.role==='Alpha-Admin'?'selected':''}>Alpha-Admin</option>
-                                </select>
-                            </td>
-                            <td><input type="text" id="pin_${safeId}" value="${u.pin}" maxlength="6" style="padding: 6px; font-size: 13px; width: 80px;"></td>
-                            <td><button class="btn-small" onclick="saveUser('${u.username}', '${safeId}')" style="background-color: #3b82f6;">Save</button></td>
-                        </tr>`;
-                });
-            });
-    }
-
-    function loadSignatories() {
-        fetch(webAppUrl, { method: 'POST', body: new URLSearchParams({action: 'getSignatories'}) })
-            .then(res => res.json()).then(data => {
-                const s1 = document.getElementById('sigNonMoney');
-                const s2 = document.getElementById('sigNonProperty');
-                const s3 = document.getElementById('sigChief');
-                const es1 = document.getElementById('editSigNonMoney');
-                const es2 = document.getElementById('editSigNonProperty');
-                const es3 = document.getElementById('editSigChief');
-
-                const defaultOpt = '<option value="">Select...</option>';
-                s1.innerHTML = defaultOpt; s2.innerHTML = defaultOpt; s3.innerHTML = defaultOpt;
-                es1.innerHTML = defaultOpt; es2.innerHTML = defaultOpt; es3.innerHTML = defaultOpt;
-                
-                if(data.signatories) {
-                    data.signatories.forEach(s => {
-                        const optionText = `<option value="${s[1]} ${s[2]}">${s[1]} ${s[2]} (${s[3]})</option>`;
-                        if(s[0] === 'Non-Money') { s1.innerHTML += optionText; es1.innerHTML += optionText; }
-                        if(s[0] === 'Non-Property') { s2.innerHTML += optionText; es2.innerHTML += optionText; }
-                        if(s[0] === 'Chief') { s3.innerHTML += optionText; es3.innerHTML += optionText; }
-                    });
-                }
-            });
-    }
-
-    function saveUser(username, safeId) {
-        const params = new URLSearchParams({
-            targetUser: username,
-            newRole: document.getElementById(`role_${safeId}`).value,
-            newPin: document.getElementById(`pin_${safeId}`).value
-        });
-        fetch(webAppUrl, { method: 'POST', body: new URLSearchParams({action: 'updateUserRole', ...Object.fromEntries(params)}) })
-            .then(res=>res.json()).then(data => { showCustomAlert(data.result === 'success' ? 'Updated.' : 'Error.'); loadUsersList(); });
-    }
-
-    function loadSignatoriesTable() {
-        if(!document.getElementById('signatoriesTable')) return;
-        fetch(webAppUrl, { method: 'POST', body: new URLSearchParams({action: 'getSignatories'}) })
-            .then(res => res.json()).then(data => {
-                const tbody = document.querySelector('#signatoriesTable tbody');
-                tbody.innerHTML = '';
-                if(data.signatories) {
-                    data.signatories.forEach(s => {
-                        tbody.innerHTML += `<tr><td>${s[0]}</td><td>${s[1]}</td><td>${s[2]}</td><td>${s[3]}</td>
-                            <td class="action-btns">
-                                <button class="btn-small btn-edit" onclick="editSig('${s[0]}', '${s[1]}', '${s[2]}', '${s[3]}')">Edit</button>
-                                <button class="btn-small btn-delete" onclick="delSig('${s[0]}', '${s[2]}')">Delete</button>
-                            </td></tr>`;
-                    });
-                }
-            });
-    }
-
-    function attachSignatoryListener() {
-        const form = document.getElementById('signatoryForm');
-        if(form) {
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const isEditing = form.getAttribute('data-editing') === 'true';
-                const actionType = isEditing ? 'editSignatory' : 'addSignatory'; 
-                
-                const params = new URLSearchParams({
-                    category: document.getElementById('sigCat').value,
-                    rank: document.getElementById('sigRank').value,
-                    name: document.getElementById('sigName').value,
-                    designation: document.getElementById('sigDesig').value,
-                    oldName: form.getAttribute('data-old-name')
-                });
-
-                processForm(e, actionType, params, () => {
-                    form.reset();
-                    form.setAttribute('data-editing', 'false');
-                    document.getElementById('sigSubmitBtn').innerText = 'Add';
-                    loadSignatoriesTable(); loadSignatories();
-                });
-            });
-        }
-    }
-
-    function editSig(category, rank, name, designation) {
-        document.getElementById('sigCat').value = category;
-        document.getElementById('sigRank').value = rank;
-        document.getElementById('sigName').value = name;
-        document.getElementById('sigDesig').value = designation;
-        
-        const form = document.getElementById('signatoryForm');
-        form.setAttribute('data-editing', 'true');
-        form.setAttribute('data-old-name', name);
-        document.getElementById('sigSubmitBtn').innerText = 'Update';
-    }
-
-    function delSig(category, name) {
-        if(!confirm('Delete this signatory?')) return;
-        fetch(webAppUrl, { method: 'POST', body: new URLSearchParams({action: 'deleteSignatory', category: category, name: name}) })
-            .then(res => res.json()).then(data => { loadSignatoriesTable(); loadSignatories(); });
-    }
-
-    window.onload = function() {
-        checkLoginStatus();
-    };
+document.querySelectorAll('.settings-tab').forEach(tab=>tab.addEventListener('click',()=>{
+  document.querySelectorAll('.settings-tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');
+  document.querySelectorAll('.settings-panel').forEach(p=>p.classList.remove('active'));$(tab.dataset.tab).classList.add('active')
+}));
+$('newPassword').addEventListener('input',()=>{$('passwordHint').innerText=$('newPassword').value.length>=8?'Good password length. Avoid reusing passwords.':'Use at least 8 characters when possible.'});
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>{if((localStorage.getItem('profileTheme')||'light')==='system')applyTheme('system')});
+$('date').value=new Date().toISOString().split('T')[0];
+setupPreferences();checkLoginStatus();
 </script>
 </body>
 </html>
